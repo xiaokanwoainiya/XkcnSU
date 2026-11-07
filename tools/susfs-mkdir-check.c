@@ -29,7 +29,7 @@ int main(int argc, char **argv)
     for (const char **path = (const char *[]){"/", "/.", "/..", NULL}; *path; path++)
         failures += expect_existing(AT_FDCWD, *path);
 
-    char directory[] = "/data/local/tmp/milksu-mkdir-check-XXXXXX";
+    char directory[] = "/data/local/tmp/xkcnsu-mkdir-check-XXXXXX";
     if (!mkdtemp(directory))
         return 3;
     int fd = open(directory, O_RDONLY | O_DIRECTORY | O_CLOEXEC);

@@ -1,4 +1,4 @@
-/* Test-only: probe transport, with one fixed, inert MilkSU echo fixture. */
+/* Test-only: probe transport, with one fixed, inert XKCNSU echo fixture. */
 #include <errno.h>
 #include <elf.h>
 #include <inttypes.h>
@@ -26,8 +26,8 @@ int main(int argc, char **argv)
         command = 0x1020;
     } else if (!strcmp(argv[1], "missing-load")) {
         command = 0x1020;
-        path = "/data/local/tmp/MilkSU-file-that-does-not-exist.kpm";
-        arguments = "MilkSU-transport-check";
+        path = "/data/local/tmp/XKCNSU-file-that-does-not-exist.kpm";
+        arguments = "XKCNSU-transport-check";
     } else if (!strcmp(argv[1], "buffer-null") || !strcmp(argv[1], "buffer-invalid-elf")) {
         command = 0x1023;
         if (!strcmp(argv[1], "buffer-invalid-elf")) {
@@ -40,9 +40,9 @@ int main(int argc, char **argv)
                !strcmp(argv[1], "fixture-bad-callback") ||
                !strcmp(argv[1], "fixture-read")) {
         command = !strcmp(argv[1], "fixture-load") ? 0x1020 : 0x1023;
-        path = "/data/adb/ksu/MilkSU/kpm/"
+        path = "/data/adb/ksu/XKCNSU/kpm/"
                "940d22509b5cb6acadc5f4fb7a208a152d14cdc5eacd0eb5b597ae6a6b481638.kpm";
-        arguments = "MilkSU-native-fixture-check";
+        arguments = "XKCNSU-native-fixture-check";
         if (!strcmp(argv[1], "fixture-buffer-nullargs"))
             arguments = NULL;
         if (command == 0x1023) {

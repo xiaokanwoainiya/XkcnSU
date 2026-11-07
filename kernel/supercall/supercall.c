@@ -16,7 +16,7 @@
 #include "arch.h"
 #include "util.h"
 #include "klog.h" // IWYU pragma: keep
-#include "milksu_root.h"
+#include "xkcnsu_root.h"
 
 #define KSU_DRIVER_PERMISSION_SU_SESSION (1UL << 0)
 

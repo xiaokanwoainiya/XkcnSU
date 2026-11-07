@@ -10,7 +10,7 @@ import subprocess
 import time
 import uuid
 
-PACKAGE = "io.milksu.acceptance.rootpolicy"
+PACKAGE = "io.xkcnsu.acceptance.rootpolicy"
 
 
 def main():
@@ -63,7 +63,7 @@ def main():
             lines = adb("shell", shlex.join([
                 "su", "-c", shlex.join([
                     "logcat", "-d", "-b", "all", "-v", "raw",
-                    "-s", "MilkSUAcceptance:I", "*:S",
+                    "-s", "XKCNSUAcceptance:I", "*:S",
                 ]),
             ]))
             for line in reversed(lines.splitlines()):

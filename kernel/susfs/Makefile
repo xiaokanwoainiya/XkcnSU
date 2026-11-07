@@ -10,7 +10,7 @@ obj-m += susfs_guard_lkm.o
 
 ifneq ($(KERNELRELEASE),)
 ifneq ($(CONFIG_ARM64),y)
-$(error MilkSU SUSFS guard requires CONFIG_ARM64=y)
+$(error XKCNSU SUSFS guard requires CONFIG_ARM64=y)
 endif
 endif
 

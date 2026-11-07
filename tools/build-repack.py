@@ -18,13 +18,13 @@ from signing_config import (
 
 def main() -> int:
     source = Path(sys.argv.pop(1)).resolve()
-    out = Path(os.environ.get("MILKSU_OUT", source / "out"))
+    out = Path(os.environ.get("XKCNSU_OUT", source / "out"))
     try:
         signing = load_signing_config(out / "private/certificate.json")
     except SigningConfigError as error:
         raise SystemExit(f"Signing configuration rejected: {error}") from None
     password_file = signing.password_file
-    spec = importlib.util.spec_from_file_location("milksu_repack", source / "repack_apk.py")
+    spec = importlib.util.spec_from_file_location("xkcnsu_repack", source / "repack_apk.py")
     if spec is None or spec.loader is None:
         raise SystemExit("Cannot load the repository APK repacker")
     repacker = importlib.util.module_from_spec(spec)

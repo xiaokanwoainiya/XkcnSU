@@ -13,24 +13,24 @@ import zipfile
 
 def main() -> None:
     apk = Path(sys.argv[1]).resolve()
-    out = Path(os.environ.get("MILKSU_OUT", Path(__file__).resolve().parents[1] / "out"))
+    out = Path(os.environ.get("XKCNSU_OUT", Path(__file__).resolve().parents[1] / "out"))
     certificate = json.loads((out / "private/certificate.json").read_text())
-    if os.environ.get("MILKSU_REQUIRE_RELEASE_SIGNING") == "1" and (
+    if os.environ.get("XKCNSU_REQUIRE_RELEASE_SIGNING") == "1" and (
             certificate.get("signing_profile") != "release" or
             certificate.get("development_only") is not False):
         raise SystemExit("Final APK blocked: verified release signing is required")
-    root = Path(os.environ.get("MILKSU_ROOT", Path(__file__).resolve().parents[1]))
+    root = Path(os.environ.get("XKCNSU_ROOT", Path(__file__).resolve().parents[1]))
     release = configparser.ConfigParser(interpolation=None)
     release.read_string("[release]\n" + (root / "version.properties").read_text())
-    version_name = release["release"]["MILKSU_VERSION_NAME"]
+    version_name = release["release"]["XKCNSU_VERSION_NAME"]
     version_code = release["release"].getint(
-        "MILKSU_MANAGER_VERSION_CODE", fallback=release["release"].getint("MILKSU_VERSION_CODE"))
+        "XKCNSU_MANAGER_VERSION_CODE", fallback=release["release"].getint("XKCNSU_VERSION_CODE"))
     verifier = (root / "kernel/manager/apk_sign.c").read_text()
     limit = re.search(r"#define\s+CERT_MAX_LENGTH\s+(\d+)", verifier)
     if limit and certificate["certificate_size"] > int(limit.group(1)):
         raise SystemExit("Signing certificate exceeds the kernel APK verifier limit")
     module_command = [sys.executable, str(root / "tools/build-verify-modules.py")]
-    if os.environ.get("MILKSU_REQUIRE_FULL_MATRIX", "1") != "1":
+    if os.environ.get("XKCNSU_REQUIRE_FULL_MATRIX", "1") != "1":
         module_command += ["--kmi", "android14-6.1", "--kmi", "android12-5.10"]
     modules = subprocess.run(module_command, check=False)
     if modules.returncode:
@@ -71,7 +71,7 @@ def main() -> None:
     if re.search(r"android:debuggable" + true_attribute, manifest_xml):
         raise SystemExit("Final APK must not be debuggable")
     abi_machines = {"arm64-v8a": 183, "x86_64": 62}
-    requested_abis = os.environ.get("MILKSU_ABIS")
+    requested_abis = os.environ.get("XKCNSU_ABIS")
     native_daemons = {}
     with zipfile.ZipFile(apk) as archive:
         packaged_abis = {

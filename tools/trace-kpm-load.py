@@ -15,7 +15,7 @@ def main():
     parser.add_argument("--native-probe", choices=(
         "hello", "null-load", "missing-load", "fixture-load", "fixture-buffer-load",
         "fixture-read", "fixture-buffer-nullargs"))
-    parser.add_argument("--args", default="MilkSU-acceptance")
+    parser.add_argument("--args", default="XKCNSU-acceptance")
     parser.add_argument("--output", type=Path, required=True)
     args = parser.parse_args()
     if not args.native_probe and not args.id:
@@ -38,7 +38,7 @@ def main():
         try:
             time.sleep(1)
             operation = (
-                ["/data/local/tmp/milksu-kpm-transport-check", args.native_probe]
+                ["/data/local/tmp/xkcnsu-kpm-transport-check", args.native_probe]
                 if args.native_probe else
                 ["/data/adb/ksud", "kpm", "load", args.id, "--args", args.args]
             )

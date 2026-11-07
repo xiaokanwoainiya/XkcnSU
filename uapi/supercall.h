@@ -35,7 +35,7 @@ static const __u32 KSU_GET_INFO_FLAG_BUNDLED = (1U << 4);
 static const __u32 KSU_GET_INFO_FLAG_PREINIT = (1U << 5);
 static const __u32 KSU_GET_INFO_FLAG_MANAGER_HIDE = (1U << 6);
 
-#define KSU_MANAGER_IDENTITY_MAGIC 0x4d534849
+#define KSU_MANAGER_IDENTITY_MAGIC 0x584b4849 /* XKHI: XKCNSU hidden identity */
 #define KSU_MANAGER_IDENTITY_VERSION 1
 struct ksu_manager_identity_record {
     __u32 magic;
@@ -113,7 +113,7 @@ struct ksu_uid_should_umount_cmd {
 struct ksu_get_manager_appid_cmd {
     __u32 appid; /* Input: 0 or KSU_MANAGER_REFRESH_REQUEST; output: manager app id */
 };
-static const __u32 KSU_MANAGER_REFRESH_REQUEST = 0x4d535246;
+static const __u32 KSU_MANAGER_REFRESH_REQUEST = 0x584b5246; /* XKRF */
 
 struct ksu_get_app_profile_cmd {
     struct app_profile profile; /* Input/Output: app profile structure */

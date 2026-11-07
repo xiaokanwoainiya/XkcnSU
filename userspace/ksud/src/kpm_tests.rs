@@ -6,7 +6,7 @@ use super::*;
 #[test]
 fn empty_load_arguments_use_the_optional_null_argument() {
     let empty = std::ffi::CString::new("").unwrap();
-    let literal = std::ffi::CString::new("MilkSU literal").unwrap();
+    let literal = std::ffi::CString::new("XKCNSU literal").unwrap();
     assert_eq!(runtime::load_arguments_pointer(&empty), 0);
     assert_eq!(
         runtime::load_arguments_pointer(&literal),
@@ -94,7 +94,7 @@ fn fixture(control: bool) -> Vec<u8> {
         })
         .collect::<Vec<_>>();
     let info =
-        b"name=fixture\nmodule\0version=1.0\0author=MilkSU\0description=Fixture\0license=GPL v2\0";
+        b"name=fixture\nmodule\0version=1.0\0author=XKCNSU\0description=Fixture\0license=GPL v2\0";
     let info = info
         .iter()
         .copied()
@@ -500,7 +500,7 @@ fn managed_engine_and_post_reboot_failure_keep_image_transition_truth() {
     });
     let value = status_value(&managed, &stable, true, true).unwrap();
     assert_eq!(value["supported"], true);
-    assert_eq!(value["provider"], "milksu");
+    assert_eq!(value["provider"], "xkcnsu");
     assert_eq!(value["reboot_required"], false);
 
     let failed = json!({

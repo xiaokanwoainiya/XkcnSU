@@ -8,7 +8,7 @@
 #include <unistd.h>
 #include "../kernel/include/baselib.h"
 
-void *milksu_host_global_memset(void *destination, int byte, size_t length);
+void *xkcnsu_host_global_memset(void *destination, int byte, size_t length);
 
 struct guarded_buffer {
     unsigned char *mapping;
@@ -214,7 +214,7 @@ static void strcpy_boundaries(void)
 
 int main(void)
 {
-    assert(lib_memset != memset && milksu_host_global_memset != memset);
+    assert(lib_memset != memset && xkcnsu_host_global_memset != memset);
     assert(lib_memcpy != memcpy);
     memcmp_boundaries();
     memchr_boundaries();

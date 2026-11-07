@@ -37,7 +37,7 @@ object Natives {
         null
     } catch (error: LinkageError) {
         runCatching {
-            android.util.Log.e("MilkSU", "Native bridge unavailable: ${Build.SUPPORTED_ABIS?.joinToString()}", error)
+            android.util.Log.e("XKCNSU", "Native bridge unavailable: ${Build.SUPPORTED_ABIS?.joinToString()}", error)
         }
         error
     }

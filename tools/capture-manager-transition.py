@@ -36,14 +36,14 @@ def main():
         if not match:
             raise RuntimeError("Cannot determine display dimensions")
         width, height = map(int, match.groups())
-        package = "io.milksu.manager"
+        package = "io.xkcnsu.manager"
         if args.phase == "startup":
             adb("shell", "am", "force-stop", package)
         else:
             start = 0.1 if args.phase == "kpm" else 0.7
             adb("shell", "input", "tap", str(int(width * start)), str(int(height * 0.95)))
             time.sleep(0.8)
-        remote = "/data/local/tmp/milksu-transition-" + uuid.uuid4().hex + ".mp4"
+        remote = "/data/local/tmp/xkcnsu-transition-" + uuid.uuid4().hex + ".mp4"
         recorder = subprocess.Popen(
             ["adb", "-s", args.serial, "shell", shlex.join(["su", "-c", shlex.join([
                 "screenrecord", "--size", "640x904", "--bit-rate", "1000000",

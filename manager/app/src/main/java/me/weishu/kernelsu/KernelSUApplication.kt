@@ -50,7 +50,7 @@ class KernelSUApplication : Application(), ViewModelStoreOwner {
             runCatching {
                 HiddenApiBypass.addHiddenApiExemptions("Landroid/content/pm/ApplicationInfo;->setEnableOnBackInvokedCallback")
             }.onFailure {
-                android.util.Log.w("MilkSU", "Predictive back configuration is unavailable", it)
+                android.util.Log.w("XKCNSU", "Predictive back configuration is unavailable", it)
             }
             setEnableOnBackInvokedCallback(applicationInfo, enable)
         }
@@ -71,7 +71,7 @@ class KernelSUApplication : Application(), ViewModelStoreOwner {
                 .addInterceptor { block ->
                     block.proceed(
                         block.request().newBuilder()
-                            .header("User-Agent", "MilkSU/${BuildConfig.VERSION_CODE}")
+                            .header("User-Agent", "XKCNSU/${BuildConfig.VERSION_CODE}")
                             .header("Accept-Language", Locale.getDefault().toLanguageTag()).build()
                     )
                 }.build()

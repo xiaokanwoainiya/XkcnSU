@@ -12,7 +12,7 @@ ROOT = Path(__file__).resolve().parents[2]
 @unittest.skipUnless(shutil.which("g++"), "requires a host C++ compiler")
 class ManagerTransportTests(unittest.TestCase):
     def test_identity_and_replaced_driver_descriptors_are_not_cached(self):
-        with tempfile.TemporaryDirectory(prefix="milksu-transport-") as temporary:
+        with tempfile.TemporaryDirectory(prefix="xkcnsu-transport-") as temporary:
             binary = Path(temporary) / "manager-transport"
             subprocess.run([
                 "g++", "-std=c++23", "-pthread",

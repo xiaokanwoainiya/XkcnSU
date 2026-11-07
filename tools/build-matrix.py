@@ -23,8 +23,8 @@ def main() -> int:
     parser.add_argument("--stage-assets", action="store_true")
     parser.add_argument("--mode", choices=("root", "both"), default="both")
     args = parser.parse_args()
-    root = Path(os.environ.get("MILKSU_ROOT", Path(__file__).resolve().parents[1]))
-    out = Path(os.environ.get("MILKSU_OUT", root / "out"))
+    root = Path(os.environ.get("XKCNSU_ROOT", Path(__file__).resolve().parents[1]))
+    out = Path(os.environ.get("XKCNSU_OUT", root / "out"))
     logs = out / "build-logs"
     logs.mkdir(parents=True, exist_ok=True)
     results = {}

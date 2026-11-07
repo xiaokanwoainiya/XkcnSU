@@ -30,10 +30,10 @@
 #include "feature/shell_su_adb_only.h"
 #include "infra/symbol_resolver.h"
 #include "preinit/preinit.h"
-#include "milksu_root.h"
+#include "xkcnsu_root.h"
 
 #ifndef CONFIG_ARM64
-#error "MilkSU's first release requires ARM64 GKI"
+#error "XKCNSU's first release requires ARM64 GKI"
 #endif
 
 #if defined(__x86_64__) && !defined(CONFIG_KSU_X86_PATCH_SYSCALL_DISPATCHER)
@@ -102,15 +102,15 @@ static bool adb_initialized, shell_initialized, manager_initialized;
 static bool backend_initialized, supercalls_initialized, runtime_initialized;
 static bool preinit_initialized, throne_initialized, observer_initialized;
 static bool hide_initialized, avc_initialized;
-static int milksu_init_error;
-module_param_named(init_error, milksu_init_error, int, 0444);
+static int xkcnsu_init_error;
+module_param_named(init_error, xkcnsu_init_error, int, 0444);
 MODULE_PARM_DESC(init_error, "Initialization errno; nonzero means a quarantined, unready root provider");
 
-static int milksu_detach_hooks(void)
+static int xkcnsu_detach_hooks(void)
 {
     int ret;
 
-    milksu_root_set_ready(false);
+    xkcnsu_root_set_ready(false);
     if (avc_initialized) {
         ksu_avc_spoof_exit();
         avc_initialized = false;
@@ -148,7 +148,7 @@ static int milksu_detach_hooks(void)
     return ksu_lsm_hook_exit();
 }
 
-static void milksu_release_state(void)
+static void xkcnsu_release_state(void)
 {
     if (observer_initialized)
         ksu_observer_exit();
@@ -173,7 +173,7 @@ int __init kernelsu_init(void)
 {
     int ret;
 
-    pr_info("welcome to MilkSU version " __stringify(KERNEL_SU_VERSION) ", package name " KSU_PACKAGE_NAME "\n");
+    pr_info("welcome to XKCNSU version " __stringify(KERNEL_SU_VERSION) ", package name " KSU_PACKAGE_NAME "\n");
 #if defined(__x86_64__) && !defined(CONFIG_KSU_X86_PATCH_SYSCALL_DISPATCHER)
     // If the kernel has the hardening patch, X86_FEATURE_INDIRECT_SAFE must be set
     if (!boot_cpu_has(X86_FEATURE_INDIRECT_SAFE)) {
@@ -200,7 +200,7 @@ int __init kernelsu_init(void)
     pr_alert("*************************************************************");
     pr_alert("**     NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE    **");
     pr_alert("**                                                         **");
-        pr_alert("**          You are running MilkSU in DEBUG mode           **");
+        pr_alert("**          You are running XKCNSU in DEBUG mode           **");
     pr_alert("**                                                         **");
     pr_alert("**     NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE    **");
     pr_alert("*************************************************************");
@@ -328,8 +328,8 @@ int __init kernelsu_init(void)
     }
 
     /* Raw table/LSM callbacks cannot veto delete_module from module_exit. */
-    milksu_root_pin_callbacks();
-    milksu_root_set_ready(true);
+    xkcnsu_root_pin_callbacks();
+    xkcnsu_root_set_ready(true);
     ksu_allowlist_ready();
     ksu_mark_running_process();
 
@@ -341,34 +341,34 @@ int __init kernelsu_init(void)
     return 0;
 
 fail:
-    milksu_init_error = ret;
-    pr_err("MilkSU initialization failed: %d\n", ret);
+    xkcnsu_init_error = ret;
+    pr_err("XKCNSU initialization failed: %d\n", ret);
     {
-        int cleanup_ret = milksu_detach_hooks();
+        int cleanup_ret = xkcnsu_detach_hooks();
 
-        if (cleanup_ret || milksu_root_callbacks_pinned()) {
+        if (cleanup_ret || xkcnsu_root_callbacks_pinned()) {
             /*
              * Returning an init error would free this module's text even with
              * references. Keep an inert, unready provider resident instead.
              */
-            milksu_root_pin_callbacks();
-            pr_crit("MilkSU quarantined: init=%d, restore=%d; state retained\n",
+            xkcnsu_root_pin_callbacks();
+            pr_crit("XKCNSU quarantined: init=%d, restore=%d; state retained\n",
                     ret, cleanup_ret);
             return 0;
         }
     }
-    milksu_release_state();
+    xkcnsu_release_state();
     return ret;
 }
 
 void __exit kernelsu_exit(void)
 {
-    if (milksu_detach_hooks()) {
-        pr_crit("MilkSU callbacks still referenced; state retained\n");
+    if (xkcnsu_detach_hooks()) {
+        pr_crit("XKCNSU callbacks still referenced; state retained\n");
         return;
     }
     synchronize_rcu();
-    milksu_release_state();
+    xkcnsu_release_state();
 }
 
 #if NEED_OWN_STACKPROTECTOR
@@ -380,7 +380,7 @@ module_exit(kernelsu_exit);
 
 MODULE_LICENSE("GPL");
 MODULE_AUTHOR("weishu");
-MODULE_DESCRIPTION("MilkSU ARM64 GKI root with KernelSU-Next hooks");
+MODULE_DESCRIPTION("XKCNSU ARM64 GKI root with KernelSU-Next hooks");
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 13, 0)
 MODULE_IMPORT_NS("VFS_internal_I_am_really_a_filesystem_and_am_NOT_a_driver");
 #else

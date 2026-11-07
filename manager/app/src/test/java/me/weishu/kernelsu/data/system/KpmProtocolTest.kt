@@ -754,8 +754,8 @@ class KpmProtocolTest {
         assertNull(CoreUpdatePolicy.url("http://example.com/release"))
         assertNull(CoreUpdatePolicy.url("https://user:pass@example.com/release"))
         assertEquals("https://example.com/release", CoreUpdatePolicy.url("https://example.com/release"))
-        assertEquals(30001, CoreUpdatePolicy.versionCode("MilkSU_v1.0_30001-release.apk"))
-        assertEquals(30001, CoreUpdatePolicy.versionCode("MilkSU_PR_v1.0_30001.apk"))
+        assertEquals(30001, CoreUpdatePolicy.versionCode("XKCNSU_v1.0_30001-release.apk"))
+        assertEquals(30001, CoreUpdatePolicy.versionCode("XKCNSU_PR_v1.0_30001.apk"))
         assertNull(CoreUpdatePolicy.versionCode("KernelSU_v1.0_30001-release.apk"))
     }
 }

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Prepare the supplied bottle artwork for Android's adaptive icon safe area."""
+"""Prepare supplied monochrome artwork for Android's adaptive icon safe area."""
 import argparse
 from pathlib import Path
 
@@ -22,12 +22,13 @@ def main():
     width = round(alpha.width * height / alpha.height)
     alpha = alpha.resize((width, height), Image.Resampling.LANCZOS)
     foreground = Image.new("RGBA", (432, 432))
-    bottle = Image.new("RGBA", alpha.size, (0, 0, 0, 0))
-    bottle.putalpha(alpha)
-    foreground.alpha_composite(bottle, ((432 - width) // 2, (432 - height) // 2))
-    destination = root / "manager/app/src/main/res/drawable-xxxhdpi/ic_launcher_foreground.png"
+    mark = Image.new("RGBA", alpha.size, (0, 0, 0, 0))
+    mark.putalpha(alpha)
+    foreground.alpha_composite(mark, ((432 - width) // 2, (432 - height) // 2))
+    destination = root / "manager/app/src/main/res/drawable-xxxhdpi/ic_launcher_imported.png"
     destination.parent.mkdir(parents=True, exist_ok=True)
     foreground.save(destination, optimize=True)
+    print("Imported raster is separate; the default XKCNSU vector remains authoritative.")
 
     preview = Image.new("RGB", (768, 288), "#e8ebed")
     for index, shape in enumerate(("circle", "rounded", "splash")):

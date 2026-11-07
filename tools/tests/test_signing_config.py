@@ -26,7 +26,7 @@ with mock.patch.object(sys, "path", [str(TOOLS), *sys.path]):
 
 class SigningFixture(unittest.TestCase):
     def setUp(self):
-        self.temporary = tempfile.TemporaryDirectory(prefix="milksu signing config $ ")
+        self.temporary = tempfile.TemporaryDirectory(prefix="xkcnsu signing config $ ")
         self.addCleanup(self.temporary.cleanup)
         self.root = Path(self.temporary.name).resolve()
         self.private = self.root / "private"
@@ -41,14 +41,14 @@ class SigningFixture(unittest.TestCase):
         self.metadata_file = self.private / "certificate.json"
         self.metadata = {
             **{key: str(path) for key, path in self.paths.items()},
-            "key_alias": "milksu-release",
+            "key_alias": "xkcnsu-release",
             "signing_profile": "release",
             "development_only": False,
             "certificate_size": len(self.certificate),
             "KSU_EXPECTED_HASH": hashlib.sha256(self.certificate).hexdigest(),
         }
         self.write_metadata()
-        environment = mock.patch.dict(os.environ, {"MILKSU_REQUIRE_RELEASE_SIGNING": "0"})
+        environment = mock.patch.dict(os.environ, {"XKCNSU_REQUIRE_RELEASE_SIGNING": "0"})
         environment.start()
         self.addCleanup(environment.stop)
 
@@ -68,7 +68,7 @@ class SigningFixture(unittest.TestCase):
 
     def development_metadata(self):
         self.metadata.update(
-            key_alias="milksu-dev", signing_profile="development", development_only=True,
+            key_alias="xkcnsu-dev", signing_profile="development", development_only=True,
         )
         self.write_metadata()
 
@@ -81,20 +81,20 @@ class SigningConfigTests(SigningFixture):
                          [self.metadata_file, self.paths["certificate_der"]])
         self.assertEqual(config.keystore, self.paths["keystore"])
         self.assertEqual(config.password_file, self.paths["password_file"])
-        self.assertEqual(config.key_alias, "milksu-release")
-        self.assertEqual(config.output_name, "MilkSU")
-        self.assertEqual(config.apk_name, "MilkSU.apk")
+        self.assertEqual(config.key_alias, "xkcnsu-release")
+        self.assertEqual(config.output_name, "XKCNSU")
+        self.assertEqual(config.apk_name, "XKCNSU.apk")
 
     def test_development_still_selects_the_development_apk_name(self):
         self.development_metadata()
-        self.assertEqual(self.load().apk_name, "MilkSU-dev.apk")
+        self.assertEqual(self.load().apk_name, "XKCNSU-dev.apk")
         del self.metadata["signing_profile"]
         self.write_metadata()
         self.assertEqual(self.load().signing_profile, "development")
 
     def test_release_environment_cannot_be_bypassed_by_default_or_false_argument(self):
         self.development_metadata()
-        with mock.patch.dict(os.environ, {"MILKSU_REQUIRE_RELEASE_SIGNING": "1"}):
+        with mock.patch.dict(os.environ, {"XKCNSU_REQUIRE_RELEASE_SIGNING": "1"}):
             for require_release in (None, False, True):
                 with self.subTest(require_release=require_release):
                     with self.assertRaisesRegex(SIGNING.SigningConfigError, "release signing"):
@@ -208,7 +208,7 @@ class SigningConfigTests(SigningFixture):
         escaped = " $literal-${project.name}\\'\\\\secret space "
         self.assertIn("p.ext.set('KEYSTORE_PASSWORD', '" + escaped + "')", source)
         self.assertIn("p.ext.set('KEY_PASSWORD', '" + escaped + "')", source)
-        self.assertIn("p.ext.set('KEY_ALIAS', 'milksu-release')", source)
+        self.assertIn("p.ext.set('KEY_ALIAS', 'xkcnsu-release')", source)
         self.assertNotIn('"', source)
         if os.name == "posix":
             self.assertEqual(stat.S_IMODE(output.stat().st_mode), 0o600)
@@ -253,13 +253,13 @@ class SigningConfigTests(SigningFixture):
         with mock.patch.object(SIGNING, "read_signing_password", side_effect=AssertionError):
             SIGNING.write_repack_config(config, output, ["arm64-v8a", "x86_64"])
         data = json.loads(output.read_bytes())
-        self.assertEqual(data["output_name"], "MilkSU")
+        self.assertEqual(data["output_name"], "XKCNSU")
         self.assertEqual(data["arch"], ["arm64-v8a", "x86_64"])
         self.assertEqual(data["signing"], {
             "keystore_path": str(self.paths["keystore"]),
-            "key_alias": "milksu-release",
-            "keystore_pass": "__MILKSU_PASSWORD_FILE__",
-            "key_pass": "__MILKSU_PASSWORD_FILE__",
+            "key_alias": "xkcnsu-release",
+            "keystore_pass": "__XKCNSU_PASSWORD_FILE__",
+            "key_pass": "__XKCNSU_PASSWORD_FILE__",
         })
         self.assertNotIn(self.password, output.read_bytes())
         if os.name == "posix":
@@ -284,13 +284,13 @@ class SigningConfigTests(SigningFixture):
                         contextlib.redirect_stdout(stdout):
                     self.assertEqual(SIGNING.main(), 0)
                 self.assertEqual(stdout.getvalue(),
-                                 "MilkSU.apk\n" if profile == "release" else "MilkSU-dev.apk\n")
+                                 "XKCNSU.apk\n" if profile == "release" else "XKCNSU-dev.apk\n")
 
 
 class BuildRepackSigningTests(SigningFixture):
     def run_repacker(self, *, returncode=0, signer_stdout=""):
         source = self.root / "frozen source"
-        expected_name = "MilkSU" if self.metadata["signing_profile"] == "release" else "MilkSU-dev"
+        expected_name = "XKCNSU" if self.metadata["signing_profile"] == "release" else "XKCNSU-dev"
         stub = SimpleNamespace(merge_config=lambda file_config, arguments: {
             "signing": {"keystore_path": "/wrong-key", "key_alias": "wrong-alias",
                         "keystore_pass": "wrong-password", "key_pass": "wrong-password"},
@@ -330,7 +330,7 @@ class BuildRepackSigningTests(SigningFixture):
 
         stub.main = repacker_main
         fake_spec = SimpleNamespace(loader=SimpleNamespace(exec_module=lambda module: None))
-        with mock.patch.dict(os.environ, {"MILKSU_OUT": str(self.root)}), \
+        with mock.patch.dict(os.environ, {"XKCNSU_OUT": str(self.root)}), \
                 mock.patch.object(sys, "argv", ["build-repack.py", str(source), "repack"]), \
                 mock.patch.object(REPACK.importlib.util, "spec_from_file_location", return_value=fake_spec), \
                 mock.patch.object(REPACK.importlib.util, "module_from_spec", return_value=stub), \
@@ -347,7 +347,7 @@ class BuildRepackSigningTests(SigningFixture):
         return result
 
     def test_release_repacker_pins_identity_and_uses_distinct_private_password_files(self):
-        with mock.patch.dict(os.environ, {"MILKSU_REQUIRE_RELEASE_SIGNING": "1"}):
+        with mock.patch.dict(os.environ, {"XKCNSU_REQUIRE_RELEASE_SIGNING": "1"}):
             self.assertEqual(self.run_repacker(), 0)
 
     def test_development_repacker_keeps_dev_output_but_uses_metadata_password(self):
@@ -363,7 +363,7 @@ class BuildRepackSigningTests(SigningFixture):
     def test_formal_gate_rejects_development_before_loading_repacker_or_running_tools(self):
         self.development_metadata()
         with mock.patch.dict(os.environ, {
-            "MILKSU_OUT": str(self.root), "MILKSU_REQUIRE_RELEASE_SIGNING": "1",
+            "XKCNSU_OUT": str(self.root), "XKCNSU_REQUIRE_RELEASE_SIGNING": "1",
         }), mock.patch.object(sys, "argv", [
             "build-repack.py", str(self.root / "source"), "repack",
         ]), mock.patch.object(REPACK.importlib.util, "spec_from_file_location") as load, \

@@ -11,10 +11,11 @@ import kotlinx.serialization.json.longOrNull
 import me.weishu.kernelsu.ui.util.module.LatestVersionInfo
 
 object CoreUpdatePolicy {
-    const val LATEST_RELEASE_URL = "https://api.github.com/repos/Xiaogugtfgdfhgrh/MikSU/releases/latest"
+    // Configure XKCNSU_UPDATE_URL when the independent release repository exists.
+    const val LATEST_RELEASE_URL = ""
     private val stableVersion = Regex("v?((?:0|[1-9][0-9]*)\\.(?:0|[1-9][0-9]*)\\.(?:0|[1-9][0-9]*))")
     private val stableApk = Regex(
-        "^MilkSU_v?((?:0|[1-9][0-9]*)\\.(?:0|[1-9][0-9]*)\\.(?:0|[1-9][0-9]*))_" +
+        "^XKCNSU_v?((?:0|[1-9][0-9]*)\\.(?:0|[1-9][0-9]*)\\.(?:0|[1-9][0-9]*))_" +
             "([1-9][0-9]*)(?:-(?:release|arm64-v8a|arm64-v8a-release))?\\.apk$"
     )
 
@@ -27,7 +28,7 @@ object CoreUpdatePolicy {
     }
 
     fun versionCode(assetName: String): Int? =
-        Regex("^MilkSU(?:_PR)?_.+_(\\d+)(?:-[A-Za-z0-9._-]+)?\\.apk$")
+        Regex("^XKCNSU(?:_PR)?_.+_(\\d+)(?:-[A-Za-z0-9._-]+)?\\.apk$")
             .matchEntire(assetName)?.groupValues?.get(1)?.toIntOrNull()
 
     fun isDownloadable(

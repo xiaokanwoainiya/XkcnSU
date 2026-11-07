@@ -29,7 +29,7 @@ object KpmImport {
                 if (name != null && !name.endsWith(".kpm", ignoreCase = true)) {
                     throw BackendException("invalid_file", "Select a .kpm file")
                 }
-                val file = File.createTempFile("milksu-kpm-", ".kpm", context.cacheDir)
+                val file = File.createTempFile("xkcnsu-kpm-", ".kpm", context.cacheDir)
                 staged = file
                 val input = resolver.openInputStream(uri)
                     ?: throw BackendException("read_failed", "Cannot open the selected document")

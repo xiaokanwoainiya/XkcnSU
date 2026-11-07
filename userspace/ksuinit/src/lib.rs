@@ -553,7 +553,7 @@ pub fn has_kernelsu() -> bool {
 pub fn ensure_root_provider_ready() -> Result<()> {
     anyhow::ensure!(
         has_kernelsu_v2(),
-        "MilkSU LKM is resident without a ready root interface"
+        "XKCNSU LKM is resident without a ready root interface"
     );
     Ok(())
 }

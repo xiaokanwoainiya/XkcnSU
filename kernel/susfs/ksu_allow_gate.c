@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0
-/* Adapted from KernelSU-Next: acquire a ready MilkSU root API v1 provider. */
+/* Adapted from KernelSU-Next: acquire a ready XKCNSU root API v1 provider. */
 #include <linux/kernel.h>
 #include <linux/module.h>
 #include <linux/types.h>
@@ -13,7 +13,7 @@
  * while susfs_ksu_allow_kind == 1, which is what lets the inline above test the kind instead of the
  * pointer on every call. */
 static bool (*ksu_allow_fn)(uid_t uid);
-static const struct milksu_root_api *ksu_allow_api;
+static const struct xkcnsu_root_api *ksu_allow_api;
 
 /* 0 = no source resolved (strict fallback), 1 = KernelSU's predicate.  See the header. */
 int susfs_ksu_allow_kind;
@@ -44,7 +44,7 @@ bool __nocfi noinline susfs_ksu_allow_ask(uid_t uid)
 
 int susfs_ksu_allow_gate_init(void)
 {
-	const struct milksu_root_api *api = susfs_root_api_acquire();
+	const struct xkcnsu_root_api *api = susfs_root_api_acquire();
 
 	if (IS_ERR(api))
 		return PTR_ERR(api);
@@ -52,7 +52,7 @@ int susfs_ksu_allow_gate_init(void)
 	ksu_allow_fn = api->allow_uid_for_current;
 	WRITE_ONCE(susfs_ksu_allow_kind, 1);	/* only now is there something to ask */
 	SUSFS_LOGI("ksu_allow_gate: resolved %s at %px - the privileged-view predicate now answers KernelSU\n",
-		   "MilkSU root API v1", (void *)ksu_allow_fn);
+		   "XKCNSU root API v1", (void *)ksu_allow_fn);
 	return 0;
 }
 

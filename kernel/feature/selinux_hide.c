@@ -30,7 +30,7 @@
 #include "ksu.h"
 #include "policy/feature.h"
 #include "hook/lsm_hook.h"
-#include "milksu_root.h"
+#include "xkcnsu_root.h"
 
 static DEFINE_MUTEX(selinux_hide_mutex);
 static bool ksu_selinux_hide_enabled __read_mostly = false;
@@ -423,14 +423,14 @@ static int ksu_selinux_hide_enable()
         if (ret == -EUCLEAN) {
             context_hooked = true;
             hide_ever_enabled = true;
-            milksu_root_pin_callbacks();
+            xkcnsu_root_pin_callbacks();
         }
         pr_err("selinux_hide: init: patch_text context_write err: %d\n", ret);
         goto unhook;
     }
     context_hooked = true;
     hide_ever_enabled = true;
-    milksu_root_pin_callbacks();
+    xkcnsu_root_pin_callbacks();
 
     access_write = &selinux_write_op[SEL_ACCESS];
     pr_info("selinux_hide: access_write: 0x%lx [%pSb]\n", (unsigned long)*access_write, *access_write);
@@ -441,7 +441,7 @@ static int ksu_selinux_hide_enable()
     if (ret) {
         if (ret == -EUCLEAN) {
             access_hooked = true;
-            milksu_root_pin_callbacks();
+            xkcnsu_root_pin_callbacks();
         }
         pr_err("selinux_hide: init: patch_text access_write err: %d\n", ret);
         goto unhook;
@@ -583,14 +583,14 @@ static int hook_selinux_status_open(void)
         if (ret == -EUCLEAN) {
             status_hooked = true;
             status_ever_hooked = true;
-            milksu_root_pin_callbacks();
+            xkcnsu_root_pin_callbacks();
         }
         pr_err("selinux_hide: init: patch_text sel_open_handle_status err: %d\n", ret);
         return ret;
     }
     status_hooked = true;
     status_ever_hooked = true;
-    milksu_root_pin_callbacks();
+    xkcnsu_root_pin_callbacks();
     return 0;
 }
 

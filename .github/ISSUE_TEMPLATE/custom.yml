@@ -1,5 +1,5 @@
 name: Custom issue template
-description: Describe a MilkSU issue or suggestion.
+description: Describe a XKCNSU issue or suggestion.
 title: '[Custom]'
 body:
   - type: textarea

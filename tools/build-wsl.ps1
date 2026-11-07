@@ -14,13 +14,13 @@ $ErrorActionPreference = 'Stop'
 $MilkRoot = Split-Path -Parent $PSScriptRoot
 $MilkWslRoot = (& wsl.exe -d Ubuntu -u root --exec wslpath -u $MilkRoot).Trim()
 if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($MilkWslRoot)) {
-    throw 'Cannot map MilkSU to the Ubuntu WSL filesystem.'
+    throw 'Cannot map XKCNSU to the Ubuntu WSL filesystem.'
 }
 $MilkScript = ''
 $MilkArguments = @()
 switch ($Stage) {
-    'doctor' { $MilkScript = 'bootstrap-milksu.sh'; $MilkArguments = @('doctor') }
-    'bootstrap' { $MilkScript = 'bootstrap-milksu.sh'; $MilkArguments = @('all') }
+    'doctor' { $MilkScript = 'bootstrap-xkcnsu.sh'; $MilkArguments = @('doctor') }
+    'bootstrap' { $MilkScript = 'bootstrap-xkcnsu.sh'; $MilkArguments = @('all') }
     'lkm' { $MilkScript = 'build-lkm.sh'; $MilkArguments = @($Kmi, $Mode) }
     'kpatch' { $MilkScript = 'build-kpatch.sh' }
     'all' {
@@ -36,12 +36,12 @@ switch ($Stage) {
         $MilkArguments = @('snapshot', $(if ($SourceReady) { '--source-ready' } else { '--preview' }))
     }
     'matrix' {
-        & wsl.exe -d Ubuntu -u root --exec env "MILKSU_ROOT=$MilkWslRoot" `
+        & wsl.exe -d Ubuntu -u root --exec env "XKCNSU_ROOT=$MilkWslRoot" `
             python3 "$MilkWslRoot/tools/build-matrix.py" --jobs $MatrixJobs --stage-assets
         exit $LASTEXITCODE
     }
     default { $MilkScript = 'build-release.sh'; $MilkArguments = @($Stage) }
 }
-& wsl.exe -d Ubuntu -u root --exec env "MILKSU_ROOT=$MilkWslRoot" `
+& wsl.exe -d Ubuntu -u root --exec env "XKCNSU_ROOT=$MilkWslRoot" `
     bash "$MilkWslRoot/tools/$MilkScript" @MilkArguments
 exit $LASTEXITCODE

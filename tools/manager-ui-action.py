@@ -35,7 +35,7 @@ def main():
     args.snapshot.parent.mkdir(parents=True, exist_ok=True)
     matches = []
     for attempt in range(3):
-        remote = "/data/local/tmp/milksu-ui-action-" + uuid.uuid4().hex + ".xml"
+        remote = "/data/local/tmp/xkcnsu-ui-action-" + uuid.uuid4().hex + ".xml"
         adb("shell", "uiautomator", "dump", remote)
         adb("pull", remote, str(args.snapshot))
         matches = [node for node in ET.parse(args.snapshot).iter("node")

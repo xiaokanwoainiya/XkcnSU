@@ -3,31 +3,31 @@
 set -Eeuo pipefail
 # shellcheck source=build-common.sh
 source "$(dirname -- "${BASH_SOURCE[0]}")/build-common.sh"
-milksu_freeze "$@"
-milksu_log signing
+xkcnsu_freeze "$@"
+xkcnsu_log signing
 umask 077
-private="$MILKSU_OUT/private"
+private="$XKCNSU_OUT/private"
 mkdir -p "$private"
 exec {signing_lock}>"$private/signing.lock"
 flock "$signing_lock"
-profile="${MILKSU_SIGNING_PROFILE:-release}"
+profile="${XKCNSU_SIGNING_PROFILE:-release}"
 promote=false
 compact=false
 case "${1:-}" in
     "") ;;
     --promote-development) promote=true ;;
     --compact-certificate) compact=true ;;
-    *) milksu_die "Usage: build-signing.sh [--promote-development|--compact-certificate]" ;;
+    *) xkcnsu_die "Usage: build-signing.sh [--promote-development|--compact-certificate]" ;;
 esac
 case "$profile" in
-    release) stem=milksu-release; password_name=release-password ;;
-    development) stem=milksu-dev; password_name=keystore-password ;;
-    *) milksu_die "MILKSU_SIGNING_PROFILE must be release or development." ;;
+    release) stem=xkcnsu-release; password_name=release-password ;;
+    development) stem=xkcnsu-dev; password_name=keystore-password ;;
+    *) xkcnsu_die "XKCNSU_SIGNING_PROFILE must be release or development." ;;
 esac
 [[ "$promote" == false || "$profile" == release ]] ||
-    milksu_die "Development-key promotion requires the release signing profile."
+    xkcnsu_die "Development-key promotion requires the release signing profile."
 [[ "$compact" == false || "$profile" == development ]] ||
-    milksu_die "Release certificates must retain their exact signing identity."
+    xkcnsu_die "Release certificates must retain their exact signing identity."
 store="$private/$stem.p12"
 password_file="$private/$password_name"
 alias_name="$stem"
@@ -39,32 +39,32 @@ cleanup() {
 trap cleanup EXIT
 if [[ -e "$store" || -e "$password_file" ]]; then
     [[ -s "$store" && -s "$password_file" ]] ||
-        milksu_die "Keystore or password is missing; existing signing material was retained."
+        xkcnsu_die "Keystore or password is missing; existing signing material was retained."
 else
     if [[ "$promote" == true ]]; then
-        [[ -s "$private/milksu-dev.p12" && -s "$private/keystore-password" ]] ||
-            milksu_die "The existing MilkSU development key and its password are required."
-    elif [[ "$profile" == release && -e "$private/milksu-dev.p12" ]]; then
-        milksu_die "An existing Manager identity is present. Use --promote-development to retain upgrade and kernel authentication."
+        [[ -s "$private/xkcnsu-dev.p12" && -s "$private/keystore-password" ]] ||
+            xkcnsu_die "The existing XKCNSU development key and its password are required."
+    elif [[ "$profile" == release && -e "$private/xkcnsu-dev.p12" ]]; then
+        xkcnsu_die "An existing Manager identity is present. Use --promote-development to retain upgrade and kernel authentication."
     fi
     openssl rand -hex 32 >"$staging/password"
     if [[ "$promote" == true ]]; then
-        keytool -importkeystore -noprompt -srckeystore "$private/milksu-dev.p12" \
-            -srcstoretype PKCS12 -srcalias milksu-dev \
+        keytool -importkeystore -noprompt -srckeystore "$private/xkcnsu-dev.p12" \
+            -srcstoretype PKCS12 -srcalias xkcnsu-dev \
             -srcstorepass:file "$private/keystore-password" \
             -destkeystore "$staging/store.p12" -deststoretype PKCS12 \
             -destalias "$alias_name" -deststorepass:file "$staging/password" \
             -destkeypass:file "$staging/password"
-        keytool -exportcert -keystore "$private/milksu-dev.p12" -alias milksu-dev \
+        keytool -exportcert -keystore "$private/xkcnsu-dev.p12" -alias xkcnsu-dev \
             -storepass:file "$private/keystore-password" -file "$staging/original.der"
         keytool -exportcert -keystore "$staging/store.p12" -alias "$alias_name" \
             -storepass:file "$staging/password" -file "$staging/promoted.der"
         cmp "$staging/original.der" "$staging/promoted.der" ||
-            milksu_die "Promotion changed the certificate; existing signing material was retained."
+            xkcnsu_die "Promotion changed the certificate; existing signing material was retained."
     else
         keytool -genkeypair -noprompt -storetype PKCS12 -keystore "$staging/store.p12" \
             -alias "$alias_name" -keyalg RSA -keysize 3072 -sigalg SHA256withRSA \
-            -validity 10000 -dname 'CN=MilkSU' \
+            -validity 10000 -dname 'CN=XKCNSU' \
             -storepass:file "$staging/password" -keypass:file "$staging/password"
     fi
     mv "$staging/store.p12" "$store"
@@ -73,12 +73,12 @@ fi
 keytool -exportcert -keystore "$store" -alias "$alias_name" \
     -storepass:file "$password_file" -file "$staging/certificate.der"
 if [[ "$promote" == true ]]; then
-    [[ -s "$private/milksu-dev.p12" && -s "$private/keystore-password" ]] ||
-        milksu_die "The existing MilkSU development identity is required to verify promotion."
-    keytool -exportcert -keystore "$private/milksu-dev.p12" -alias milksu-dev \
+    [[ -s "$private/xkcnsu-dev.p12" && -s "$private/keystore-password" ]] ||
+        xkcnsu_die "The existing XKCNSU development identity is required to verify promotion."
+    keytool -exportcert -keystore "$private/xkcnsu-dev.p12" -alias xkcnsu-dev \
         -storepass:file "$private/keystore-password" -file "$staging/expected-original.der"
     cmp "$staging/expected-original.der" "$staging/certificate.der" ||
-        milksu_die "The existing release certificate differs from the development identity; signing material was retained."
+        xkcnsu_die "The existing release certificate differs from the development identity; signing material was retained."
 fi
 if [[ "$compact" == true && $(stat -c%s "$staging/certificate.der") -gt 1024 ]]; then
     before="$(openssl x509 -inform DER -in "$staging/certificate.der" -pubkey -noout |
@@ -88,18 +88,18 @@ if [[ "$compact" == true && $(stat -c%s "$staging/certificate.der") -gt 1024 ]];
         cp "$staging/certificate.der" "$private/$stem-oversize-original.der"
     fi
     keytool -selfcert -keystore "$store" -alias "$alias_name" \
-        -dname 'CN=MilkSU' -validity 10000 -sigalg SHA256withRSA \
+        -dname 'CN=XKCNSU' -validity 10000 -sigalg SHA256withRSA \
         -storepass:file "$password_file" -keypass:file "$password_file"
     keytool -exportcert -keystore "$store" -alias "$alias_name" \
         -storepass:file "$password_file" -file "$staging/certificate.der"
     after="$(openssl x509 -inform DER -in "$staging/certificate.der" -pubkey -noout |
         openssl pkey -pubin -outform DER | sha256sum)"
-    [[ "$before" == "$after" ]] || milksu_die "Public key changed during certificate compaction."
+    [[ "$before" == "$after" ]] || xkcnsu_die "Public key changed during certificate compaction."
 fi
 openssl x509 -inform DER -in "$staging/certificate.der" -out "$staging/certificate.pem"
 mv "$staging/certificate.der" "$private/$stem.der"
 mv "$staging/certificate.pem" "$private/$stem.pem"
-python3 - "$private" "$MILKSU_PACKAGE_NAME" "$MILKSU_ROOT/kernel/manager/apk_sign.c" \
+python3 - "$private" "$XKCNSU_PACKAGE_NAME" "$XKCNSU_ROOT/kernel/manager/apk_sign.c" \
     "$profile" "$stem" "$password_name" <<'PY'
 import hashlib, json, os, pathlib, re, sys
 private = pathlib.Path(sys.argv[1])

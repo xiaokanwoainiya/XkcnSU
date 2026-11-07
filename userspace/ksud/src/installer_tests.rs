@@ -4,10 +4,10 @@ fn embedded_installer_is_shell_syntax_on_windows_checkouts() {
     use std::io::Write;
     #[cfg(unix)]
     use std::process::{Command, Stdio};
-    const WINDOWS: &str = "#!/system/bin/sh\r\nprintf '%s\\n' MilkSU\r\n";
+    const WINDOWS: &str = "#!/system/bin/sh\r\nprintf '%s\\n' XKCNSU\r\n";
     const NORMALIZED: &str = const_format::str_replace!(WINDOWS, "\r\n", "\n");
     const INSTALLER: &str = const_format::str_replace!(include_str!("installer.sh"), "\r\n", "\n");
-    assert_eq!(NORMALIZED, "#!/system/bin/sh\nprintf '%s\\n' MilkSU\n");
+    assert_eq!(NORMALIZED, "#!/system/bin/sh\nprintf '%s\\n' XKCNSU\n");
     assert!(!INSTALLER.contains('\r'));
     #[cfg(unix)]
     {

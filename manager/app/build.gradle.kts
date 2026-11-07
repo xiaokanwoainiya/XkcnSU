@@ -27,18 +27,18 @@ val managerVersionName = rootProject.extra["managerVersionName"] as String
 val bundledKernelVersionCode = rootProject.extra["bundledKernelVersionCode"] as Int
 
 val isPrBuild = project.findProperty("IS_PR_BUILD")?.toString()?.toBoolean() ?: false
-val defaultManagerPackageName = if (isPrBuild) "io.milksu.manager.pr" else "io.milksu.manager"
-val defaultManagerName = if (isPrBuild) "MilkSU PR" else "MilkSU"
+val defaultManagerPackageName = if (isPrBuild) "io.xkcnsu.manager.pr" else "io.xkcnsu.manager"
+val defaultManagerName = if (isPrBuild) "XKCNSU PR" else "XKCNSU"
 val managerPackageName = project.findProperty("KSU_PACKAGE_NAME")?.toString() ?: defaultManagerPackageName
 val managerName = project.findProperty("KSU_NAME")?.toString() ?: defaultManagerName
-val milkSuUpdateUrl = providers.gradleProperty("MILKSU_UPDATE_URL")
-    .orElse(providers.environmentVariable("MILKSU_UPDATE_URL"))
-    .orElse("https://api.github.com/repos/Xiaogugtfgdfhgrh/MikSU/releases/latest").get().trim()
-val coreUpdateEnabled = !isPrBuild && milkSuUpdateUrl.isNotEmpty()
+val xkcnSuUpdateUrl = providers.gradleProperty("XKCNSU_UPDATE_URL")
+    .orElse(providers.environmentVariable("XKCNSU_UPDATE_URL"))
+    .orElse("").get().trim()
+val coreUpdateEnabled = !isPrBuild && xkcnSuUpdateUrl.isNotEmpty()
 require(!coreUpdateEnabled || runCatching {
-    val uri = URI(milkSuUpdateUrl)
+    val uri = URI(xkcnSuUpdateUrl)
     uri.scheme == "https" && !uri.host.isNullOrBlank() && uri.rawUserInfo == null
-}.getOrDefault(false)) { "MILKSU_UPDATE_URL must be an HTTPS URL" }
+}.getOrDefault(false)) { "XKCNSU_UPDATE_URL must be an HTTPS URL" }
 
 apksign {
     storeFileProperty = "KEYSTORE_FILE"
@@ -51,13 +51,13 @@ fun managerAbis(): List<String> {
     val known = listOf("arm64-v8a", "x86_64")
     val jniLibs = layout.projectDirectory.dir("src/main/jniLibs").asFile
     val staged = known.filter { File(jniLibs, "$it/libksud.so").isFile }
-    val configured = providers.gradleProperty("MILKSU_ABIS")
-        .orElse(providers.environmentVariable("MILKSU_ABIS"))
+    val configured = providers.gradleProperty("XKCNSU_ABIS")
+        .orElse(providers.environmentVariable("XKCNSU_ABIS"))
         .orNull
     val requested = configured?.split(Regex("[,\\s]+"))?.filter(String::isNotBlank)?.distinct()
         ?: staged.ifEmpty { known }
     require(requested.isNotEmpty() && requested.all { it in known }) {
-        "MILKSU_ABIS must contain supported daemon ABIs: ${known.joinToString()}"
+        "XKCNSU_ABIS must contain supported daemon ABIs: ${known.joinToString()}"
     }
     require(requested.all { it in staged }) {
         "Build and stage libksud.so for each requested ABI before Manager: ${requested.filterNot { it in staged }}"
@@ -181,7 +181,7 @@ android {
         buildConfigField("boolean", "IS_PR_BUILD", isPrBuild.toString())
         buildConfigField("long", "BUNDLED_KERNEL_VERSION_CODE", "${bundledKernelVersionCode}L")
         buildConfigField("boolean", "CORE_UPDATE_ENABLED", coreUpdateEnabled.toString())
-        buildConfigField("String", "MILKSU_UPDATE_URL", "\"${milkSuUpdateUrl.replace("\\", "\\\\").replace("\"", "\\\"")}\"")
+        buildConfigField("String", "XKCNSU_UPDATE_URL", "\"${xkcnSuUpdateUrl.replace("\\", "\\\\").replace("\"", "\\\"")}\"")
         resValue("string", "app_name", managerName)
 
         externalNativeBuild {

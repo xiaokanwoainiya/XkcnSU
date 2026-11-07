@@ -98,7 +98,7 @@ static void reboot_loader(void)
 static void *fixture(int with_control, int *length)
 {
     const char names[] = "\0.shstrtab\0.strtab\0.symtab\0.kpm.info\0.kpm.init\0.kpm.exit\0.kpm.ctl0\0";
-    const char info[] = "name=host-fixture\0version=1.0\0author=MilkSU\0description=Loader test\0";
+    const char info[] = "name=host-fixture\0version=1.0\0author=XKCNSU\0description=Loader test\0";
     unsigned char *bytes = calloc(1, 4096);
     assert(bytes);
     Elf_Ehdr *header = (void *)bytes;

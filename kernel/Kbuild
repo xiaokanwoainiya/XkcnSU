@@ -15,7 +15,7 @@ ifeq ($(CONFIG_ARM64),y)
 kernelsu-objs += hook/arm64/patch_memory.o
 kernelsu-objs += hook/arm64/syscall_hook.o
 else
-$(error MilkSU first release supports ARM64 GKI only)
+$(error XKCNSU first release supports ARM64 GKI only)
 endif
 
 kernelsu-objs += infra/file_wrapper.o
@@ -132,42 +132,42 @@ obj-$(CONFIG_KSU) += kernelsu.o
 MDIR := $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
 
 # Use the same release identity as Manager and ksud, including source archives.
-MILKSU_VERSION_FILE := $(abspath $(MDIR)/../version.properties)
-ifeq ($(wildcard $(MILKSU_VERSION_FILE)),)
-$(error MilkSU requires version.properties next to the kernel directory)
+XKCNSU_VERSION_FILE := $(abspath $(MDIR)/../version.properties)
+ifeq ($(wildcard $(XKCNSU_VERSION_FILE)),)
+$(error XKCNSU requires version.properties next to the kernel directory)
 endif
-include $(MILKSU_VERSION_FILE)
-MILKSU_VERSION_VALID := $(shell printf '%s\n' '$(MILKSU_VERSION_CODE)' | \
+include $(XKCNSU_VERSION_FILE)
+XKCNSU_VERSION_VALID := $(shell printf '%s\n' '$(XKCNSU_VERSION_CODE)' | \
     awk '/^[0-9]+$$/ && $$0 >= 32800 && $$0 <= 2100000000 {print "yes"}')
-ifneq ($(MILKSU_VERSION_VALID),yes)
-$(error Invalid MILKSU_VERSION_CODE in version.properties)
+ifneq ($(XKCNSU_VERSION_VALID),yes)
+$(error Invalid XKCNSU_VERSION_CODE in version.properties)
 endif
-override KSU_VERSION := $(MILKSU_VERSION_CODE)
-$(info -- MilkSU version: $(MILKSU_VERSION_NAME) ($(KSU_VERSION)))
+override KSU_VERSION := $(XKCNSU_VERSION_CODE)
+$(info -- XKCNSU version: $(XKCNSU_VERSION_NAME) ($(KSU_VERSION)))
 ccflags-y += -DKSU_VERSION=$(KSU_VERSION)
 
 KSU_NEW_DCACHE_FLUSH := $(shell grep -q __flush_dcache_area $(srctree)/arch/arm64/include/asm/cacheflush.h ; echo $$?)
 $(info -- KSU_NEW_DCACHE_FLUSH: $(KSU_NEW_DCACHE_FLUSH))
 
 KSU_IS_PR_BUILD ?= 0
-KSU_PACKAGE_NAME ?= io.milksu.manager
+KSU_PACKAGE_NAME ?= io.xkcnsu.manager
 
 ifneq ($(CONFIG_KSU_DISABLE_MANAGER),y)
 ifeq ($(strip $(KSU_EXPECTED_SIZE)),)
-$(error MilkSU requires KSU_EXPECTED_SIZE from the Manager signing certificate)
+$(error XKCNSU requires KSU_EXPECTED_SIZE from the Manager signing certificate)
 endif
 ifeq ($(strip $(KSU_EXPECTED_HASH)),)
-$(error MilkSU requires KSU_EXPECTED_HASH from the Manager signing certificate)
+$(error XKCNSU requires KSU_EXPECTED_HASH from the Manager signing certificate)
 endif
 else
 KSU_EXPECTED_SIZE ?= 0
 KSU_EXPECTED_HASH ?= disabled
 endif
 
-$(info -- MilkSU Manager package name: $(KSU_PACKAGE_NAME))
-$(info -- MilkSU Manager signature size: $(KSU_EXPECTED_SIZE))
-$(info -- MilkSU Manager signature hash: $(KSU_EXPECTED_HASH))
-$(info -- MilkSU is PR Build: $(KSU_IS_PR_BUILD))
+$(info -- XKCNSU Manager package name: $(KSU_PACKAGE_NAME))
+$(info -- XKCNSU Manager signature size: $(KSU_EXPECTED_SIZE))
+$(info -- XKCNSU Manager signature hash: $(KSU_EXPECTED_HASH))
+$(info -- XKCNSU is PR Build: $(KSU_IS_PR_BUILD))
 
 ccflags-y += -DKSU_PACKAGE_NAME=\"$(KSU_PACKAGE_NAME)\"
 ccflags-y += -DEXPECTED_SIZE=$(KSU_EXPECTED_SIZE)

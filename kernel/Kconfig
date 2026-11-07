@@ -1,7 +1,7 @@
-menu "MilkSU"
+menu "XKCNSU"
 
 config KSU
-	tristate "MilkSU ARM64 GKI root support"
+	tristate "XKCNSU ARM64 GKI root support"
 	depends on ARM64 && KPROBES && EXT4_FS && HAVE_SYSCALL_TRACEPOINTS
 	default y
 	help

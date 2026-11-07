@@ -1,0 +1,403 @@
+{
+  "schema_version": 1,
+  "product": "XKCNSU",
+  "backend": "KernelSU-Next ARM64 sys_enter dispatcher",
+  "source_repository": "KernelSU-Next",
+  "source_commit": "a6c81fa4a8b7341d0bc5c3e4507531459df871ae",
+  "base_repository": "KernelSU",
+  "base_commit": "28db74f6f4692e97006ce9ebd8b19b9cc614b5b7",
+  "uapi_version": 6,
+  "architectures": [
+    "arm64"
+  ],
+  "original_kernel_hook_fallback": false,
+  "files": [
+    {
+      "source_path": "kernel/hook/arm64/syscall_hook.c",
+      "source_sha256": "bbe54b2d457d88358263974599254c2faeab69aa2e9b26cc84755fcb1130adf1",
+      "destination_path": "kernel/hook/arm64/syscall_hook.c",
+      "destination_sha256": "4f53aeef6edfe7c50f6969100449fd09d635aee1b9970ba30f45eede3843654c",
+      "adapted": true,
+      "compiled_object": "kernel/hook/arm64/syscall_hook.o"
+    },
+    {
+      "source_path": "kernel/hook/arm64/patch_memory.c",
+      "source_sha256": "81da525d40a98113f101b44ff700ce67aa39cc05083c4fe22b5f088f1d2ffa28",
+      "destination_path": "kernel/hook/arm64/patch_memory.c",
+      "destination_sha256": "29b98bf960e4e82fe66cceb848bf1c10f43c039ba73e9c06438d72630de52b90",
+      "adapted": true,
+      "compiled_object": "kernel/hook/arm64/patch_memory.o"
+    },
+    {
+      "source_path": "kernel/hook/syscall_hook.h",
+      "source_sha256": "e217147d8d7282d4b662ebf9194d1163a812cd6108bd873a281298572771460c",
+      "destination_path": "kernel/hook/syscall_hook.h",
+      "destination_sha256": "7a12b09f48b29d824da1206c12bb4f5d793fd2bc59705bd2d71d77a52c17898c",
+      "adapted": true,
+      "compiled_object": null
+    },
+    {
+      "source_path": "kernel/hook/syscall_hook_manager.c",
+      "source_sha256": "be42b610a08cba1a0b80ba3fea89c70468108504eac871a9ace0818e874ad524",
+      "destination_path": "kernel/hook/syscall_hook_manager.c",
+      "destination_sha256": "4e70bf94a8fbfffbe2845926da720e8ace325b03382028267b7b46071213c9ed",
+      "adapted": true,
+      "compiled_object": "kernel/hook/syscall_hook_manager.o"
+    },
+    {
+      "source_path": "kernel/hook/syscall_hook_manager.h",
+      "source_sha256": "8b3a9213cea8ab1762a3230e2a5cfa65ff0631ce55a87cd947bff7986454c6e6",
+      "destination_path": "kernel/hook/syscall_hook_manager.h",
+      "destination_sha256": "2580a6471dbda678b8274c17dd133cd878cce39caca23896653d8d8ac08a9197",
+      "adapted": true,
+      "compiled_object": null
+    },
+    {
+      "source_path": "kernel/hook/syscall_event_bridge.c",
+      "source_sha256": "fe51c15ff24b72f8eecbcf838408e5ddbfc6a71a58a7ace553ecb568693c3260",
+      "destination_path": "kernel/hook/syscall_event_bridge.c",
+      "destination_sha256": "1a68e14a82dc7bb3333a4ae0d5b09fcd5ce0afe85a1fec7bb6d60223abf56f4c",
+      "adapted": false,
+      "compiled_object": "kernel/hook/syscall_event_bridge.o"
+    },
+    {
+      "source_path": "kernel/hook/syscall_event_bridge.h",
+      "source_sha256": "3da5221d65606eb73c399e2e7f2921916bab74c47d52b5b0d416208c23ca1543",
+      "destination_path": "kernel/hook/syscall_event_bridge.h",
+      "destination_sha256": "252afbb7af93659d4494732d88be5ff59d0d9f4aa5fd6c2f4b3ad99d9906d3fe",
+      "adapted": false,
+      "compiled_object": null
+    },
+    {
+      "source_path": "kernel/hook/setuid_hook.c",
+      "source_sha256": "de24c37759e349aae169d7d4d36b767decd667cc0a29620a5ed34ffea3116aed",
+      "destination_path": "kernel/hook/setuid_hook.c",
+      "destination_sha256": "2deafe0cc9793bbb4c1d0ac8c92eb52d0a24875698b605b725a92f59fa71b361",
+      "adapted": true,
+      "compiled_object": "kernel/hook/setuid_hook.o"
+    },
+    {
+      "source_path": "kernel/hook/setuid_hook.h",
+      "source_sha256": "e5c960d7515d92a2527467c1ca88ea335ebf573df8bf500f4e6831eee940161c",
+      "destination_path": "kernel/hook/setuid_hook.h",
+      "destination_sha256": "d08e0e0802d124f5a48dda550cb5ea116ace080e27c64ac940e819b835b716cc",
+      "adapted": true,
+      "compiled_object": null
+    },
+    {
+      "source_path": "kernel/hook/tp_marker.c",
+      "source_sha256": "03bd24a1142bfe8a6d1df13b960fc8104886e2ab109f9650b67a72861296c352",
+      "destination_path": "kernel/hook/tp_marker.c",
+      "destination_sha256": "0e1027b98015c347d07e2e1e79a50b60dba25a80421e83f14599190f19d89404",
+      "adapted": true,
+      "compiled_object": "kernel/hook/tp_marker.o"
+    },
+    {
+      "source_path": "kernel/hook/tp_marker.h",
+      "source_sha256": "0158f275c9e5dc5ff1fc5d7c8936a8d5ce74fe1c333f67871348e66be2acb701",
+      "destination_path": "kernel/hook/tp_marker.h",
+      "destination_sha256": "af7de3d73905ce31bb3ccbc7d354496991ff98af8e643a03ff21f6df122fcceb",
+      "adapted": false,
+      "compiled_object": null
+    },
+    {
+      "source_path": "kernel/hook/lsm_hook.c",
+      "source_sha256": "847c1a8dddf0c9b9eefdec4ec0e8ee8ddbc456716d6cc89a02ecebc211bc9613",
+      "destination_path": "kernel/hook/lsm_hook.c",
+      "destination_sha256": "0706a439dde5826c556e4eb8f5fe6619b30c6fe57cb4db9a5d1a1ad1937e2b39",
+      "adapted": true,
+      "compiled_object": "kernel/hook/lsm_hook.o"
+    },
+    {
+      "source_path": "kernel/hook/lsm_hook.h",
+      "source_sha256": "917883fff27460a58c94260cd4f911e2240070a32af1f32c96d4bc7cde22df5f",
+      "destination_path": "kernel/hook/lsm_hook.h",
+      "destination_sha256": "09155361b925e370f0777f8176decbf9d3fa964f9e55acb9dfc4595b3d3f6147",
+      "adapted": true,
+      "compiled_object": null
+    },
+    {
+      "source_path": "kernel/hook/patch_memory.h",
+      "source_sha256": "50a1e12d6140e9c0c4164ea4eddbceb0deb208d843cd05d41f97a8ef2f21b21f",
+      "destination_path": "kernel/hook/patch_memory.h",
+      "destination_sha256": "395cfb8bfe704e3d755bbaa555a519fda00f4a8fa6f5a0f033eb7545bc0a3715",
+      "adapted": true,
+      "compiled_object": null
+    },
+    {
+      "source_path": "kernel/include/arch.h",
+      "source_sha256": "b785b31113197fa9fd62b1caba19ea2e7317d1f2505ae26bd09a8bc2752ef9d4",
+      "destination_path": "kernel/include/arch.h",
+      "destination_sha256": "21951ac6769665243ce5962a8e55a54d01c9738eff1c3d3babbdd6dd8563cbb9",
+      "adapted": false,
+      "compiled_object": null
+    },
+    {
+      "source_path": "kernel/infra/symbol_resolver.c",
+      "source_sha256": "293a70b6d695b564ce6bd3cdfbbfd721f8d0eb476c71f3684c8d9f4095175b36",
+      "destination_path": "kernel/infra/symbol_resolver.c",
+      "destination_sha256": "2d04df83ea489f3ba305c1fb08fb6d329c80c715b15edbe36aa38a406c1056f5",
+      "adapted": true,
+      "compiled_object": "kernel/infra/symbol_resolver.o"
+    },
+    {
+      "source_path": "kernel/infra/symbol_resolver.h",
+      "source_sha256": "c75a672c96ec2970c43fc65d55acc0b9bb6756ac634ab58a1d4eff1ef3999747",
+      "destination_path": "kernel/infra/symbol_resolver.h",
+      "destination_sha256": "314983b86235ce2d7427857b8ae57c3b2f67e50837ac64b56daec1bd5ebc595e",
+      "adapted": true,
+      "compiled_object": null
+    },
+    {
+      "source_path": "kernel/infra/seccomp_cache.c",
+      "source_sha256": "58b6fcb940bd394e4621ed7da31edc6bb771dcbd620b098a8bfa2c1d10cfa44c",
+      "destination_path": "kernel/infra/seccomp_cache.c",
+      "destination_sha256": "be0f193ee23a323d39c9d33b4e928a128d10e3b0a9ccd333e01b9335cd5ef65f",
+      "adapted": false,
+      "compiled_object": "kernel/infra/seccomp_cache.o"
+    },
+    {
+      "source_path": "kernel/infra/seccomp_cache.h",
+      "source_sha256": "8615776db3de36e6986649e8914e470105c07a1b092707a60499e75999c11d3d",
+      "destination_path": "kernel/infra/seccomp_cache.h",
+      "destination_sha256": "55445022745cfa4da9faa64899138818d7d528a8a4ef7fbf224c5e15805cc848",
+      "adapted": false,
+      "compiled_object": null
+    },
+    {
+      "source_path": "kernel/extras.c",
+      "destination_path": "kernel/feature/avc_spoof.c",
+      "compiled_object": "kernel/feature/avc_spoof.o",
+      "adapted": true,
+      "source_sha256": "fa4ccc06ff625b6202a60ee59d6f528e5399d2004b40f2b725e781961aeaac3a",
+      "destination_sha256": "ca924dfaff93d9f89792c6aae0ca54b38f570fdf0d795f0597172ed48f5a040b"
+    }
+  ],
+  "retained_base_adapters": [
+    "kernel/core/init.c",
+    "kernel/feature/sucompat.c",
+    "kernel/feature/adb_root.c",
+    "kernel/feature/selinux_hide.c",
+    "kernel/feature/shell_su_adb_only.c",
+    "kernel/feature/module_blacklist.c",
+    "kernel/policy/allowlist.c",
+    "kernel/policy/app_profile.c",
+    "kernel/runtime/ksud_integration.c",
+    "kernel/runtime/boot_event.c",
+    "kernel/preinit/preinit.c",
+    "kernel/supercall/supercall.c",
+    "kernel/supercall/dispatch.c",
+    "kernel/supercall/perm.c"
+  ],
+  "adaptations": [
+    "Propagate hook initialization and registration errors with reverse rollback",
+    "Compare syscall and LSM slot ownership inside stop_machine before restoration",
+    "Guard and drain dispatched and direct syscall callbacks before rollback",
+    "Retain LKM callback provider until reboot; quarantine failed restoration without freeing callback state",
+    "Export GPL xkcnsu_root_api_get for symbol_get-pinned guard consumers",
+    "Port Next AVC feature 10003 with XKCNSU domain, live BTF validation, failure readback and shared SUSFS service"
+  ],
+  "integration_files": [
+    {
+      "path": "kernel/core/init.c",
+      "sha256": "9cdf465b1ffac5ca482cc9227348ff6b3a4a675bd8abaad4e48b9b4a90492e89"
+    },
+    {
+      "path": "kernel/core/root_ref.c",
+      "sha256": "60e1d2803a5b341bed61b0a3fe3937c5a2eb2618b889ab1d51ca4b391aa2d5de"
+    },
+    {
+      "path": "kernel/feature/adb_root.c",
+      "sha256": "5b989282a6e935c24dc9fa68740c344febe06a8c6e77e2311bc9867e379bef26"
+    },
+    {
+      "path": "kernel/feature/adb_root.h",
+      "sha256": "5d8eafada5beb16d2cb0e709958256437fcc76911fa6c1330665795f9a4474b7"
+    },
+    {
+      "path": "kernel/feature/kernel_umount.c",
+      "sha256": "1e54af6a55b2d16dd0613e2f5c0ff27ff4f1b80be96ec5e1cd8b28d716953412"
+    },
+    {
+      "path": "kernel/feature/kernel_umount.h",
+      "sha256": "04ea6d2daf1961b73fefe3ab99b5b39c20447a66d43beff72695da40170e37df"
+    },
+    {
+      "path": "kernel/feature/module_blacklist.c",
+      "sha256": "6140027d8864fc576acfc478587f1482c9c72538790c8f0c46bb373e3110ea8f"
+    },
+    {
+      "path": "kernel/feature/module_blacklist.h",
+      "sha256": "ceeb70feb64d16039f3456b09e6b6e40b9c0e30431ddb181a117a9bd5eae0202"
+    },
+    {
+      "path": "kernel/feature/selinux_hide.c",
+      "sha256": "f3691a782e45bc6bc15e97c827d698c93bb6ef95e03dddec8a309bd9f2bb43dc"
+    },
+    {
+      "path": "kernel/feature/selinux_hide.h",
+      "sha256": "a9c04956c016fd3319d7e33c8dde83931480f0efdd6f943de6ce4188d0ef8bab"
+    },
+    {
+      "path": "kernel/feature/shell_su_adb_only.c",
+      "sha256": "0afafa0ccefa292712d741d05be99bac56f6cd162f39b6832b76ca9f866ed3c9"
+    },
+    {
+      "path": "kernel/feature/shell_su_adb_only.h",
+      "sha256": "b79a16b277b6b1a6d1987fd99e5bbe8f8baa4d4f1bd1753f39ad50880db68a58"
+    },
+    {
+      "path": "kernel/feature/sucompat.c",
+      "sha256": "54ab14763895dd08ee6dca1624c97725b6fe9b2ef534c44ef10e758ddec0a32b"
+    },
+    {
+      "path": "kernel/feature/sucompat.h",
+      "sha256": "9df4bd5291f5ca7b666c33a83a371d701f3e6dc695b9da6291becc8173a2ea45"
+    },
+    {
+      "path": "kernel/feature/sulog.c",
+      "sha256": "b6f6c8714f1d468c4cbc43ec7708cd7d98a70646ddc14b8cab2a7f2c7f24eefc"
+    },
+    {
+      "path": "kernel/feature/sulog.h",
+      "sha256": "e44c613e8066946584385883290f55f39f17063a3c5cea4b4bc3b2cf95ad0886"
+    },
+    {
+      "path": "kernel/include/klog.h",
+      "sha256": "7d2c96a78bed7670b4569d9470261e359f0242c169959550a125afb09cd22937"
+    },
+    {
+      "path": "kernel/include/xkcnsu_root.h",
+      "sha256": "f5c1ccbc43eb67c2ec474f523f363dbf5a7ad59bf3b2de2bda3f00d559337cbb"
+    },
+    {
+      "path": "kernel/infra/file_wrapper.c",
+      "sha256": "e8c39e193ff7c57552a01e5d97b5bd231d6663876898c0861d55cd67d9305757"
+    },
+    {
+      "path": "kernel/infra/file_wrapper.h",
+      "sha256": "018a0b9ba785162bcece2dade50919250faf3717021d460db041eea5e65bf543"
+    },
+    {
+      "path": "kernel/Kbuild",
+      "sha256": "b9651d79543de437a01706dcae878a42e1147af2c7e49ac3291556d8d87c3a87"
+    },
+    {
+      "path": "kernel/Kconfig",
+      "sha256": "adebecf6f60986ca2b592433167dd3b5e5eef3f69783902d132608d6d8df623b"
+    },
+    {
+      "path": "kernel/manager/pkg_observer.c",
+      "sha256": "639316d45125a0240c7dc59deeffe6ed0b7ec7f5c079cf05c93321c270480e98"
+    },
+    {
+      "path": "kernel/manager/throne_tracker.c",
+      "sha256": "5303d92012d0ef1753f89d5c70ead6e719902b241d4493ba814871178c8d26fb"
+    },
+    {
+      "path": "kernel/policy/allowlist.c",
+      "sha256": "1936cbed7201aba43779c3528438d29513a9e648636c5c4fe0cb2954ed52e352"
+    },
+    {
+      "path": "kernel/policy/allowlist.h",
+      "sha256": "4f78d4781c45cee193162efffed924a5109326f42fdc9e0e949f733ac2b204f7"
+    },
+    {
+      "path": "kernel/policy/app_profile.c",
+      "sha256": "530d94926e6c9cde0ea92d1153a9d036594f39a88204263616e54f42c3cf2c3f"
+    },
+    {
+      "path": "kernel/policy/feature.c",
+      "sha256": "9439663a7083d9cb9a586fa62f8474f39d5818de83aa263ee93cedb0b7637852"
+    },
+    {
+      "path": "kernel/preinit/preinit.c",
+      "sha256": "09bd42759fc081dd682fe77c0bb5f4bcfeb6c6788054741fde5f042c3bb70a83"
+    },
+    {
+      "path": "kernel/preinit/preinit.h",
+      "sha256": "21d11629d2598563fd07a29d5f137dfc8d1c4fa95bd08023f1a3464c44f9f5ac"
+    },
+    {
+      "path": "kernel/runtime/boot_event.c",
+      "sha256": "247c3dafb8bac2ee1b6206c182af5d32ad4eada9dfc416a5469f98723ad5549c"
+    },
+    {
+      "path": "kernel/runtime/ksud_integration.c",
+      "sha256": "656e2dd71975146d97e14a252dfe83dc60f505ff0c07d33d1267add6c31d4e63"
+    },
+    {
+      "path": "kernel/runtime/ksud.h",
+      "sha256": "444e997e2e94ba6c2af8c5b1b27d796b05ccad00caac195bd9a67866888abfa6"
+    },
+    {
+      "path": "kernel/setup.sh",
+      "sha256": "0a4e795a9bb6ad029e8813d4bd23f286f7fd2ec08e526f77a1b4c309434f64fc"
+    },
+    {
+      "path": "kernel/sulog/event.c",
+      "sha256": "953eb2a5787eb09f3014be44926b77c71908762bc0e2aa97946706e3d78e4f23"
+    },
+    {
+      "path": "kernel/sulog/fd.c",
+      "sha256": "67133e9c8a64e4e6503c69eb4e7b58ce87f8c89440af75aabc5ae9b7fa5874db"
+    },
+    {
+      "path": "kernel/supercall/dispatch.c",
+      "sha256": "12f6b2d3c8c483c55050e2f6dfe72fa05704a607e20ecf5e2eee11c282492974"
+    },
+    {
+      "path": "kernel/supercall/perm.c",
+      "sha256": "444bfe294717e627920e8dd2dc6976df426de1ce197f2a75557f9617e6deb632"
+    },
+    {
+      "path": "kernel/supercall/supercall.c",
+      "sha256": "00b6e410ae6df25433a5d4b60ae544c25cdfc7beb614fafacba7708b9885a303"
+    },
+    {
+      "path": "kernel/supercall/supercall.h",
+      "sha256": "ec982e889cd866fa14ecc1fe9825572c099c05c9e5b0b95f16228c87ba881851"
+    }
+  ],
+  "runtime_contract": {
+    "module_name": "kernelsu",
+    "hot_unload_supported": false,
+    "module_sysfs_visible": false,
+    "module_sysfs_visible_when_debug_or_quarantined": true,
+    "readonly_decimal_parameters": [
+      "/sys/module/kernelsu/parameters/callbacks_pinned",
+      "/sys/module/kernelsu/parameters/unload_supported",
+      "/sys/module/kernelsu/parameters/unload_safe",
+      "/sys/module/kernelsu/parameters/root_ready",
+      "/sys/module/kernelsu/parameters/init_error"
+    ],
+    "load_success_requires": {
+      "root_ready": 1,
+      "init_error": 0,
+      "userspace_probe": "successful GET_INFO through the ready-gated driver"
+    },
+    "unload_requires_explicit_sysfs_permission": true,
+    "quarantine_ioctl_errno": "EHOSTDOWN",
+    "guard_reference": "symbol_get(xkcnsu_root_api_get) / symbol_put(xkcnsu_root_api_get)",
+    "guard_abi_version": 1
+  },
+  "setup_contract": {
+    "source": "local script checkout or explicit XKCNSU_SOURCE_ROOT",
+    "network_access": false,
+    "repository_mutations": false,
+    "managed_driver": "drivers/xkcnsu",
+    "cleanup": "exact marked lines and matching symlink only",
+    "reference_repositories_readonly": [
+      "KernelSU",
+      "KernelSU-Next",
+      "KPatch-Next",
+      "KPatch-Next-Module"
+    ]
+  },
+  "derived_from": {
+    "product": "MilkSU",
+    "repository": "https://github.com/Xiaogugtfgdfhgrh/MikSU",
+    "tag": "v0.2.3",
+    "commit": "99bfbe84e197a44e10fde247d6cd0714d895c5f7"
+  }
+}

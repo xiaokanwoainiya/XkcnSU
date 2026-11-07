@@ -55,7 +55,7 @@ internal suspend fun isDownloadAvailable(uri: Uri): Boolean = withContext(Dispat
 
 fun checkNewVersion(): LatestVersionInfo {
     if (!BuildConfig.CORE_UPDATE_ENABLED || BuildConfig.IS_PR_BUILD) return LatestVersionInfo()
-    val url = CoreUpdatePolicy.url(BuildConfig.MILKSU_UPDATE_URL) ?: return LatestVersionInfo()
+    val url = CoreUpdatePolicy.url(BuildConfig.XKCNSU_UPDATE_URL) ?: return LatestVersionInfo()
     if (!isNetworkAvailable(ksuApp)) return LatestVersionInfo()
     return runCatching {
         val request = Request.Builder()

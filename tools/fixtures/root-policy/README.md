@@ -1,7 +1,7 @@
 # Root Policy Acceptance APK
 
-This temporary APK is `io.milksu.acceptance.rootpolicy`, labelled
-`MilkSU Root Test`. It has an exported launcher activity, one exported receiver,
+This temporary APK is `io.xkcnsu.acceptance.rootpolicy`, labelled
+`XKCNSU Root Test`. It has an exported launcher activity, one exported receiver,
 and no requested permissions. It uses its real Android app UID. It does not edit
 profiles, switch UIDs, access the network, or write report files.
 
@@ -11,9 +11,9 @@ Build from Linux/WSL:
 bash tools/build-root-policy-fixture.sh
 ```
 
-The script uses Java and the existing `/opt/milksu/android-sdk` build tools
+The script uses Java and the existing `/opt/xkcnsu/android-sdk` build tools
 `37.0.0` with platform `37.0` (or `37`). The result is
-`out/test-harness/root-policy/MilkSU-Root-Test.apk`. Each build uses a fresh test
+`out/test-harness/root-policy/XKCNSU-Root-Test.apk`. Each build uses a fresh test
 certificate and discards its private key. Reinstalling a different build requires
 uninstalling the preceding build. No product signing material or release asset
 staging is used.
@@ -22,20 +22,20 @@ The following device commands are for the operator's later acceptance run; the
 build script never runs them:
 
 ```sh
-adb -s SERIAL install -t out/test-harness/root-policy/MilkSU-Root-Test.apk
+adb -s SERIAL install -t out/test-harness/root-policy/XKCNSU-Root-Test.apk
 adb -s SERIAL shell am start \
-  -n io.milksu.acceptance.rootpolicy/.ProbeActivity --es nonce before-001
-adb -s SERIAL logcat -d -v raw -s MilkSUAcceptance:I '*:S'
+  -n io.xkcnsu.acceptance.rootpolicy/.ProbeActivity --es nonce before-001
+adb -s SERIAL logcat -d -v raw -s XKCNSUAcceptance:I '*:S'
 ```
 
-The launcher is `io.milksu.acceptance.rootpolicy/.ProbeActivity`. Once resumed,
+The launcher is `io.xkcnsu.acceptance.rootpolicy/.ProbeActivity`. Once resumed,
 it sends an explicit same-package broadcast to `.ProbeReceiver` with the
 unchanged nonce and `FLAG_RECEIVER_FOREGROUND`. It stays open for 9 seconds
 from dispatch, keeping its window's screen on, then calls `finish()`. Wait for
 that window to close before starting the next probe with a fresh nonce.
 Configuration recreation preserves dispatch state and the finish deadline,
 so it does not repeat the probe. Opening the launcher without a valid nonce
-just displays `MilkSU Root Test` for 9 seconds.
+just displays `XKCNSU Root Test` for 9 seconds.
 
 Use this foreground path when OEM cached-process restrictions interfere with
 direct broadcasts. The activity does not invoke `onReceive()` or `goAsync()`
@@ -46,9 +46,9 @@ Direct receiver invocation remains available:
 
 ```sh
 adb -s SERIAL shell am broadcast --include-stopped-packages --receiver-foreground \
-  -a io.milksu.acceptance.rootpolicy.PROBE \
-  -n io.milksu.acceptance.rootpolicy/.ProbeReceiver --es nonce before-001
-adb -s SERIAL logcat -d -v raw -s MilkSUAcceptance:I '*:S'
+  -a io.xkcnsu.acceptance.rootpolicy.PROBE \
+  -n io.xkcnsu.acceptance.rootpolicy/.ProbeReceiver --es nonce before-001
+adb -s SERIAL logcat -d -v raw -s XKCNSUAcceptance:I '*:S'
 ```
 
 Only explicit broadcasts with the action above and a nonce of 1-64 ASCII letters,
@@ -63,7 +63,7 @@ The process gets 6 seconds, with a shared 7.5-second deadline for termination an
 pipe collection. It is forcibly destroyed on timeout. Collector threads are
 daemon threads and are never joined indefinitely. The final JSON record is
 limited to 3500 UTF-8 bytes, including JSON escaping, and logged with `Log.i`
-under `MilkSUAcceptance`. An independent watchdog reports a timeout and finishes
+under `XKCNSUAcceptance`. An independent watchdog reports a timeout and finishes
 the pending result at the deadline even if process creation has not returned.
 The receiver finishes its pending result once. If a timed-out process or its
 collectors remain alive, later probes report busy; force-stop the test APK
@@ -82,14 +82,14 @@ Use fresh nonces for this sequence:
 
 1. Record the installed test package's actual UID and probe before granting it.
    Verify that it did not obtain root.
-2. In the real Manager Superuser UI, grant only `MilkSU Root Test`. Probe again
+2. In the real Manager Superuser UI, grant only `XKCNSU Root Test`. Probe again
    and require `su_exit: 0`, complete streams, no errors or timeout, and
    `uid=0(root)` plus the expected root domain in `stdout`.
 3. For persistence testing, reboot after granting, then probe again under a new
    nonce. Confirm the package still has the same app UID.
 4. Revoke only this app in Manager, probe under a new nonce, and verify that root
    is denied again.
-5. Uninstall `io.milksu.acceptance.rootpolicy`; let the existing package observer
+5. Uninstall `io.xkcnsu.acceptance.rootpolicy`; let the existing package observer
    and throne pruning handle its policy record.
 
 The APK does not grant/revoke itself or infer authorization from a broadcast

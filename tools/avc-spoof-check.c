@@ -19,7 +19,7 @@
 
 #define ROOT_CONTEXT "u:r:ksu:s0"
 #define APP_CONTEXT "u:r:untrusted_app:s0:c512,c768"
-#define PROBE_COMM "MilkSUAvcProbe"
+#define PROBE_COMM "XKCNSUAvcProbe"
 #define CONTEXT_SIZE 256
 #define TIMEOUT_MS 5000
 #define CLEANUP_TIMEOUT_MS 250

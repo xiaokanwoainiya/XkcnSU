@@ -144,10 +144,10 @@ impl Probe {
             variant,
             features,
             provider,
-            load_error: read_error("milksu_load_error"),
-            restore_error: read_error("milksu_restore_error"),
-            stopping: read_bool("milksu_stopping"),
-            unload_ready: read_bool("milksu_unload_ready"),
+            load_error: read_error("xkcnsu_load_error"),
+            restore_error: read_error("xkcnsu_restore_error"),
+            stopping: read_bool("xkcnsu_stopping"),
+            unload_ready: read_bool("xkcnsu_unload_ready"),
         }
     }
 
@@ -384,7 +384,7 @@ pub fn set_autoload(enabled: bool, kmi: Option<&str>) -> Result<()> {
     Ok(())
 }
 
-/// Unknown or incompatible engines conflict; managed MilkSU engines omit this hook.
+/// Unknown or incompatible engines conflict; managed XKCNSU engines omit this hook.
 pub fn set_conflict_state(conflict: bool) -> Result<()> {
     let _operation = OperationLock::acquire()?;
     apply_conflict_state(conflict)
@@ -397,7 +397,7 @@ fn apply_conflict_state(conflict: bool) -> Result<()> {
     }
     ensure!(
         before.owned_guard(),
-        "Resident guard has no MilkSU conflict-control contract"
+        "Resident guard has no XKCNSU conflict-control contract"
     );
     let expected = if conflict { "1" } else { "0" };
     write_parameter("kpm_conflict", expected)
@@ -434,7 +434,7 @@ pub fn load(kmi: Option<&str>) -> Result<()> {
     let conflict = crate::kpm::avc_conflict();
     let params = CString::new(format!("kpm_conflict={}", u8::from(conflict)))?;
     ksuinit::load_module_with_resolver(&data, &params, resolve_imports)
-        .context("Failed to load SUSFS guard with the existing MilkSU loader")?;
+        .context("Failed to load SUSFS guard with the existing XKCNSU loader")?;
     let after = Probe::read();
     if !after.supported() || after.provider != Provider::Lkm {
         let reason = after
@@ -479,8 +479,8 @@ fn unload_guard() -> Result<()> {
     write_parameter("prepare_unload", "1")
         .context("SUSFS teardown failed; guard and root references retained")?;
     ensure!(
-        read_bool("milksu_unload_ready") == Some(true)
-            && read_error("milksu_restore_error") == Some(0),
+        read_bool("xkcnsu_unload_ready") == Some(true)
+            && read_error("xkcnsu_restore_error") == Some(0),
         "SUSFS teardown verification failed; refusing delete_module"
     );
     for attempt in 0..5 {

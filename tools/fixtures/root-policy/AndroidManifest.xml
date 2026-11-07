@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="io.milksu.acceptance.rootpolicy"
+    package="io.xkcnsu.acceptance.rootpolicy"
     android:versionCode="1"
     android:versionName="1.0">
 
@@ -8,7 +8,7 @@
 
     <application
         android:allowBackup="false"
-        android:label="MilkSU Root Test"
+        android:label="XKCNSU Root Test"
         android:testOnly="true">
         <activity
             android:name=".ProbeActivity"

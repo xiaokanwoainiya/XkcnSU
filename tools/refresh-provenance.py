@@ -7,7 +7,7 @@ from pathlib import Path
 
 def main():
     root = Path(__file__).resolve().parents[1]
-    path = root / "kernel/MILKSU_HOOK_PROVENANCE.json"
+    path = root / "kernel/XKCNSU_HOOK_PROVENANCE.json"
     report = json.loads(path.read_text())
     upstream = root.parent / "KernelSU-Next"
     avc = {
@@ -27,7 +27,7 @@ def main():
     report["adaptations"] = [
         item for item in report["adaptations"] if not item.startswith("Remove Next AVC extras")
     ]
-    detail = "Port Next AVC feature 10003 with MilkSU domain, live BTF validation, failure readback and shared SUSFS service"
+    detail = "Port Next AVC feature 10003 with XKCNSU domain, live BTF validation, failure readback and shared SUSFS service"
     if detail not in report["adaptations"]:
         report["adaptations"].append(detail)
     path.write_text(json.dumps(report, indent=2) + "\n")

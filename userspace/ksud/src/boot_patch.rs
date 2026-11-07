@@ -205,7 +205,7 @@ mod android {
     ) -> Result<()> {
         let directory = Path::new(KSU_BACKUP_DIR).join("image_transactions");
         let receipt = crate::image_transaction::install(
-            "milk-root-image",
+            "xkcnsu-root-image",
             &[crate::image_transaction::ImageWrite {
                 target: PathBuf::from(partition),
                 image: data.to_vec(),
@@ -931,7 +931,7 @@ pub fn patch(args: BootPatchArgs) -> Result<()> {
             let output_dir = out.unwrap_or(std::env::current_dir()?);
             let name = out_name.unwrap_or_else(|| {
                 let now = chrono::Utc::now();
-                format!("milksu_patched_{}.img", now.format("%Y%m%d_%H%M%S"))
+                format!("xkcnsu_patched_{}.img", now.format("%Y%m%d_%H%M%S"))
             });
             let output_image = output_dir.join(name);
             std::fs::write(&output_image, &new_boot_bytes).context("write out new boot failed")?;
@@ -1102,7 +1102,7 @@ pub fn restore(args: BootRestoreArgs) -> Result<()> {
         let output_dir = out.unwrap_or(std::env::current_dir()?);
         let name = out_name.unwrap_or_else(|| {
             let now = chrono::Utc::now();
-            format!("milksu_restore_{}.img", now.format("%Y%m%d_%H%M%S"))
+            format!("xkcnsu_restore_{}.img", now.format("%Y%m%d_%H%M%S"))
         });
         let output_image = output_dir.join(name);
         std::fs::write(&output_image, &new_boot_bytes).context("copy out new boot failed")?;

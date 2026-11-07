@@ -51,12 +51,12 @@ def main():
 
     try:
         run("boot-patch", "--boot", stock / "init_boot.img", "--kmi", args.kmi,
-            "--allow-shell", "--out", images, "--out-name", "MilkSU-init_boot.img")
-        spec = importlib.util.spec_from_file_location("milksu_extract_ota", root / "tools/extract-ota.py")
+            "--allow-shell", "--out", images, "--out-name", "XKCNSU-init_boot.img")
+        spec = importlib.util.spec_from_file_location("xkcnsu_extract_ota", root / "tools/extract-ota.py")
         ota = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(ota)
         before = ota.analyze_image(stock / "init_boot.img")
-        after = ota.analyze_image(images / "MilkSU-init_boot.img")
+        after = ota.analyze_image(images / "XKCNSU-init_boot.img")
         original_entries = {entry["path"]: entry for entry in before["ramdisk"]["entries"]}
         new_entries = {entry["path"]: entry for entry in after["ramdisk"]["entries"]}
         if new_entries["init.real"]["sha256"] != original_entries["init"]["sha256"]:
@@ -68,7 +68,7 @@ def main():
         for name, path in expected.items():
             if new_entries[name]["sha256"] != sha(path.read_bytes()):
                 raise RuntimeError(f"root image contains stale {name}")
-        image = (images / "MilkSU-init_boot.img").read_bytes()
+        image = (images / "XKCNSU-init_boot.img").read_bytes()
         ramdisk_size = struct.unpack_from("<I", image, 12)[0]
         ramdisk, _ = ota.decompress(image[4096:4096 + ramdisk_size])
         entries = ota.cpio_entries(ramdisk)
@@ -83,12 +83,12 @@ def main():
             "ksu_config_entry": config_entry,
             "analysis": after,
         }
-        patched = images / "MilkSU-KPM-boot.img"
+        patched = images / "XKCNSU-KPM-boot.img"
         original_kernel = output / "kernel.original"
         run("kpm-image", "patch", "--boot", stock / "boot.img", "--out", patched,
             "--kernel-backup", original_kernel, "--kptools", root / "out/tools/kptools",
             "--kpimg", root / "out/kpatch/aarch64/kpimg")
-        restored = images / "MilkSU-KPM-restored-boot.img"
+        restored = images / "XKCNSU-KPM-restored-boot.img"
         run("kpm-image", "restore", "--boot", patched, "--kernel", original_kernel,
             "--out", restored)
         raw = (stock / "boot.img").read_bytes()

@@ -11,7 +11,7 @@
 #include "hook/lsm_hook.h"
 #include "hook/patch_memory.h"
 #include "klog.h" // IWYU pragma: keep
-#include "milksu_root.h"
+#include "xkcnsu_root.h"
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 12, 0)
 #include "linux/static_call.h"
 #endif
@@ -265,7 +265,7 @@ int ksu_lsm_hook(struct ksu_lsm_hook *hook)
             hook->entry = selected_entry;
             hook->scall = selected_scall;
             hook->original = selected_origin;
-            milksu_root_pin_callbacks();
+            xkcnsu_root_pin_callbacks();
             goto out_unlock;
         }
         goto out_untrack;
@@ -285,7 +285,7 @@ int ksu_lsm_hook(struct ksu_lsm_hook *hook)
     hook->entry = selected_entry;
     hook->scall = selected_scall;
     hook->original = selected_origin;
-    milksu_root_pin_callbacks();
+    xkcnsu_root_pin_callbacks();
     pr_info("lsm_hook: patched %s hook slot %px from %px to %px\n", hook->head_name ?: "unknown", selected_slot,
             selected_origin, hook->replacement);
 #else
@@ -397,7 +397,7 @@ int ksu_lsm_hook(struct ksu_lsm_hook *hook)
         if (ret == -EUCLEAN) {
             hook->entry = selected_entry;
             hook->original = selected_origin;
-            milksu_root_pin_callbacks();
+            xkcnsu_root_pin_callbacks();
             goto out_unlock;
         }
         goto out_untrack;
@@ -405,7 +405,7 @@ int ksu_lsm_hook(struct ksu_lsm_hook *hook)
 
     hook->entry = selected_entry;
     hook->original = selected_origin;
-    milksu_root_pin_callbacks();
+    xkcnsu_root_pin_callbacks();
     pr_info("lsm_hook: patched %s hook slot %px from %px to %px\n", hook->head_name ?: "unknown", selected_slot,
             selected_origin, hook->replacement);
 #endif

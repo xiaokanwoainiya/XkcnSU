@@ -11,7 +11,7 @@ import stat
 import tempfile
 
 
-PASSWORD_FILE_TOKEN = "__MILKSU_PASSWORD_FILE__"
+PASSWORD_FILE_TOKEN = "__XKCNSU_PASSWORD_FILE__"
 SUPPORTED_ABIS = {"arm64-v8a", "armeabi-v7a", "x86", "x86_64", "riscv64"}
 
 
@@ -31,7 +31,7 @@ class SigningConfig:
 
     @property
     def output_name(self) -> str:
-        return "MilkSU" if self.signing_profile == "release" else "MilkSU-dev"
+        return "XKCNSU" if self.signing_profile == "release" else "XKCNSU-dev"
 
     @property
     def apk_name(self) -> str:
@@ -125,7 +125,7 @@ def load_signing_config(metadata_path, *, require_release: bool | None = None) -
         raise SigningConfigError("Signing profile and development_only disagree")
     if require_release is not None and type(require_release) is not bool:
         raise SigningConfigError("require_release must be a boolean")
-    if (require_release or os.environ.get("MILKSU_REQUIRE_RELEASE_SIGNING") == "1") and (
+    if (require_release or os.environ.get("XKCNSU_REQUIRE_RELEASE_SIGNING") == "1") and (
         metadata.get("signing_profile") != "release" or development_only is not False
     ):
         raise SigningConfigError("Explicit release signing metadata is required")

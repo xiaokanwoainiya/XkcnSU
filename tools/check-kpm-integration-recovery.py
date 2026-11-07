@@ -51,12 +51,12 @@ def main():
         boot_id = run("cat", "/proc/sys/kernel/random/boot_id")
         before = status("status")
         check(before["active"] and before["configured_enabled"]
-              and before["provider"] == "milksu" and not before["reboot_required"],
-              "The existing MilkSU KPM engine is configured and active")
+              and before["provider"] == "xkcnsu" and not before["reboot_required"],
+              "The existing XKCNSU KPM engine is configured and active")
         partitions = ["/dev/block/by-name/" + name + slot
                       for name in ("boot", "init_boot", "vendor_boot")]
         before_hashes = run("sha256sum", *partitions)
-        record = "/data/adb/ksu/MilkSU/kpm/integration/state" + (slot or "_single") + ".json"
+        record = "/data/adb/ksu/XKCNSU/kpm/integration/state" + (slot or "_single") + ".json"
         saved = record + ".acceptance-" + uuid.uuid4().hex
         run("test", "!", "-L", record)
         run("test", "!", "-e", saved)
@@ -64,7 +64,7 @@ def main():
         run("mv", record, saved)
         recovered = status("status")
         check(recovered["active"] and recovered["configured_enabled"]
-              and recovered["provider"] == "milksu"
+              and recovered["provider"] == "xkcnsu"
               and not recovered["transition_failed"] and not recovered["reboot_required"],
               "A missing record recovers the running engine without misidentifying it")
         rebuilt = json.loads(run("cat", record))
@@ -72,11 +72,11 @@ def main():
               and rebuilt["original_sha256"] == original["original_sha256"],
               "Recovered kernel checksums agree with the previous verified record")
         check(re.fullmatch(r"[0-9a-f]{64}", rebuilt["original_sha256"]) is not None
-              and rebuilt["original_kernel"].startswith("/data/adb/ksu/MilkSU/kpm/integration/"),
+              and rebuilt["original_kernel"].startswith("/data/adb/ksu/XKCNSU/kpm/integration/"),
               "The recovery record uses the requested KSU working directory")
         enabled = status("integration", "enable")
         check(enabled["configured_enabled"] and not enabled["reboot_required"],
-              "Enabling an already running MilkSU engine succeeds without reinstalling it")
+              "Enabling an already running XKCNSU engine succeeds without reinstalling it")
         check(run("sha256sum", *partitions) == before_hashes,
               "Recovery and idempotent enabling did not write any boot partition")
         check(run("cat", "/proc/sys/kernel/random/boot_id") == boot_id,

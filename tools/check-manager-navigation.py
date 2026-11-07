@@ -37,13 +37,13 @@ def main():
 
     try:
         args.report.parent.mkdir(parents=True, exist_ok=True)
-        remote = "/data/local/tmp/milksu-navigation-" + uuid.uuid4().hex + ".xml"
+        remote = "/data/local/tmp/xkcnsu-navigation-" + uuid.uuid4().hex + ".xml"
         adb("shell", "uiautomator", "dump", remote)
         xml = args.report.with_suffix(".xml")
         adb("pull", remote, str(xml))
         nodes = list(ET.parse(xml).iter("node"))
-        app = [node for node in nodes if node.get("package") == "io.milksu.manager"]
-        check(bool(app), "MilkSU Manager is visible")
+        app = [node for node in nodes if node.get("package") == "io.xkcnsu.manager"]
+        check(bool(app), "XKCNSU Manager is visible")
         width = max(bounds(node)[2] for node in app)
         height = max(bounds(node)[3] for node in app)
         labels = {"主页", "KPM", "超级用户", "模块", "设置",

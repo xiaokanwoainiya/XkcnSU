@@ -34,8 +34,8 @@ SOURCE_LINKS = {
 }
 REQUIRED_SOURCES = {
     "LICENSE", "README.md", "Cargo.toml", "Cargo.lock", "version.properties", "kernel/LICENSE",
-    "kernel/MILKSU_HOOK_PROVENANCE.json", "kernel/susfs/MILKSU_PROVENANCE.json",
-    "vendor/kpatch-next/LICENSE", "vendor/kpatch-next/MILKSU_PROVENANCE.md",
+    "kernel/XKCNSU_HOOK_PROVENANCE.json", "kernel/susfs/XKCNSU_PROVENANCE.json",
+    "vendor/kpatch-next/LICENSE", "vendor/kpatch-next/XKCNSU_PROVENANCE.md",
     "vendor/kpatch-next/kernel/Makefile", "vendor/kpatch-next/tools/CMakeLists.txt",
     "tools/build-all.sh", "tools/build-common.sh", "tools/build-release.sh",
     "tools/package-release.py",
@@ -50,21 +50,21 @@ including the vendored KPatch sources. Extract it with a tool that preserves
 Unix symlinks and executable modes, such as `unzip` on Linux or WSL.
 
 The build scripts require a local Git repository for snapshots and version
-queries. In the extracted MilkSU directory, create a new public snapshot:
+queries. In the extracted XKCNSU directory, create a new public snapshot:
 
 ```sh
 git init
 git add .
-git -c user.name=MilkSU -c user.email=build@example.invalid commit -m "Public source snapshot"
-export MILKSU_ROOT="$PWD"
-export MILKSU_SOURCE_ROOT="$PWD"
+git -c user.name=XKCNSU -c user.email=build@example.invalid commit -m "Public source snapshot"
+export XKCNSU_ROOT="$PWD"
+export XKCNSU_SOURCE_ROOT="$PWD"
 export SOURCE_DATE_EPOCH=0
-bash tools/bootstrap-milksu.sh all
+bash tools/bootstrap-xkcnsu.sh all
 bash tools/build-all.sh --source-ready
 ```
 
 Use Ubuntu/WSL with Git, network access, Docker and permissions to provision
-the toolchains. Build caches default to /opt/milksu. The tool scripts pin the
+the toolchains. Build caches default to /opt/xkcnsu. The tool scripts pin the
 toolchain versions and fetch external build dependencies; this is not an
 offline dependency mirror.
 
@@ -74,7 +74,7 @@ release version from version.properties. It therefore rebuilds the source,
 not the original signed APK bit for bit. Bit-for-bit rebuilding was not tested.
 Keep the new APK and its matching root modules together.
 
-Verify source files with `sha256sum -c SHA256SUMS` inside the extracted MilkSU
+Verify source files with `sha256sum -c SHA256SUMS` inside the extracted XKCNSU
 directory. Checksums cover regular files; symlink targets and Unix modes are
 recorded in source-manifest.json. The artifact ZIP has its own SHA256SUMS.
 Test conclusions record only the supplied reports; host checks do not
@@ -100,7 +100,7 @@ COUNT_RESULTS = {"passed_checks", "rule_errno", "groups_passed", "groups_failed"
                  "production_text_boundary_cases", "supercall_groups_passed",
                  "supercall_groups_failed", "loader_groups_passed",
                  "loader_text_boundary_assertions", "warnings_as_errors"}
-DELIVERY_NAMES = {"MilkSU-source.zip", "MilkSU-build-and-images.zip", "delivery.json"}
+DELIVERY_NAMES = {"XKCNSU-source.zip", "XKCNSU-build-and-images.zip", "delivery.json"}
 
 
 class PackagingError(ValueError):
@@ -261,7 +261,7 @@ def host_report_summary(report, source_entries):
         require(item.get("unchanged") is True and
                 sha256_field(item, "sha256_after") == expected,
                 "Final host source changed during testing")
-        data = source_entries.get("MilkSU/" + name)
+        data = source_entries.get("XKCNSU/" + name)
         require(data is not None and type(item.get("bytes")) is int and
                 len(data) == item["bytes"] and hashlib.sha256(data).hexdigest() == expected,
                 "Final host source differs from the public source snapshot: " + name)
@@ -376,7 +376,7 @@ def verify_apk_daemon(apk, daemon):
 
 def add_checksums(entries, name, modes=None):
     entries[name] = "".join(
-        hashlib.sha256(data).hexdigest() + "  " + path.removeprefix("MilkSU/") + "\n"
+        hashlib.sha256(data).hexdigest() + "  " + path.removeprefix("XKCNSU/") + "\n"
         for path, data in sorted(entries.items())
         if ((modes or {}).get(path, 0o100644) & 0o170000) != 0o120000).encode()
 
@@ -500,12 +500,12 @@ def build_plan(root, source_paths=None):
 
     if final_apk.get("signing_profile") == "release":
         require(final_apk.get("development_only") is False, "Invalid release signing metadata")
-        apk_name = "MilkSU.apk"
+        apk_name = "XKCNSU.apk"
         public_apk.update(signing_profile="release", development_only=False)
     else:
         require(final_apk.get("signing_profile") in (None, "development"),
                 "Unknown APK signing profile")
-        apk_name = "MilkSU-dev.apk"
+        apk_name = "XKCNSU-dev.apk"
     entries, binaries = {}, []
     binaries.append(add_binary(root, entries, "out/manager/" + apk_name,
                                apk_name, identifiers, apk_sha))
@@ -574,28 +574,28 @@ def build_plan(root, source_paths=None):
             data = read_input(root, relative, 32 * 1024 * 1024)
             mode = 0o100755 if (mode == 0o100755 or data.startswith(b"#!")) else 0o100644
         if safe_content(data, identifiers):
-            entry = "MilkSU/" + relative.as_posix()
+            entry = "XKCNSU/" + relative.as_posix()
             source_entries[entry] = data
             source_modes[entry] = mode
     require(source_entries, "No public source files were selected")
-    missing = REQUIRED_SOURCES - {name.removeprefix("MilkSU/") for name in source_entries}
+    missing = REQUIRED_SOURCES - {name.removeprefix("XKCNSU/") for name in source_entries}
     require(not missing, "Required source/license/provenance is missing: " + ", ".join(sorted(missing)))
     reports["kpatch-host-final"] = host_report_summary(host_report, source_entries)
-    source_entries["MilkSU/BUILDING-SOURCE.md"] = REBUILD_NOTES
+    source_entries["XKCNSU/BUILDING-SOURCE.md"] = REBUILD_NOTES
     source_manifest = {
         "schema": 2, "history_included": False, "rebuild_notes": "BUILDING-SOURCE.md",
-        "files": [{**descriptor(name.removeprefix("MilkSU/"), data),
+        "files": [{**descriptor(name.removeprefix("XKCNSU/"), data),
                    "mode": format(source_modes.get(name, 0o100644), "06o")}
                   for name, data in sorted(source_entries.items())],
     }
-    source_entries["MilkSU/source-manifest.json"] = json_bytes(source_manifest)
+    source_entries["XKCNSU/source-manifest.json"] = json_bytes(source_manifest)
     entries["manifests/release-artifacts.json"] = json_bytes(
         {"schema": 1, "apk": public_apk, "binaries": binaries})
     entries["manifests/test-conclusions.json"] = json_bytes(
         {"schema": 1, "reports": reports, "raw_evidence_included": False,
          "check_identifiers": "one-based source order; free-form descriptions omitted"})
     entries["manifests/images.json"] = json_bytes(images)
-    add_checksums(source_entries, "MilkSU/SHA256SUMS", source_modes)
+    add_checksums(source_entries, "XKCNSU/SHA256SUMS", source_modes)
     add_checksums(entries, "SHA256SUMS")
     require(all(safe_content(data, identifiers)
                 for data in (*source_entries.values(), *entries.values())),
@@ -633,8 +633,8 @@ def package_release(root, source_paths=None):
         staging = Path(staging)
         archives = {}
         for kind, filename, level in (
-            ("source", "MilkSU-source.zip", 6),
-            ("artifacts", "MilkSU-build-and-images.zip", 3),
+            ("source", "XKCNSU-source.zip", 6),
+            ("artifacts", "XKCNSU-build-and-images.zip", 3),
         ):
             path = staging / filename
             write_zip(path, plan[kind], level,

@@ -1,14 +1,6 @@
-# Reporting Security Issues
+# Security
 
-Report MilkSU-specific security issues to the maintainers of
-https://github.com/Xiaogugtfgdfhgrh/MikSU .
+Report XKCNSU security issues privately to the project maintainer through the contact
+published with its independent repository. The repository and contact are not yet configured.
 
-Use GitHub private vulnerability reporting when it is available. Include the
-MilkSU version, affected component, reproduction steps and expected behavior.
-Keep private signing material, account credentials and personal device data
-out of public reports.
-
-For issues reproduced in unmodified upstream code, consult the security
-policy of KernelSU, KernelSU-Next or KPatch-Next as appropriate. Source
-attribution and pinned revisions are listed in the project README and
-component provenance files.
+Inherited component sources and their security contacts are linked in [UPSTREAM.md](UPSTREAM.md).

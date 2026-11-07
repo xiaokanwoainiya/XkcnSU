@@ -1,0 +1,130 @@
+name: Build XKCNSU
+
+on:
+  workflow_dispatch:
+    inputs:
+      kmi_scope:
+        description: KMI coverage
+        type: choice
+        default: all
+        options:
+          - android14-6.1
+          - all
+
+permissions:
+  contents: read
+
+concurrency:
+  group: xkcnsu-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 180
+    env:
+      XKCNSU_CACHE: /opt/xkcnsu
+      XKCNSU_JOBS: 2
+      XKCNSU_ABIS: 'arm64-v8a x86_64'
+      XKCNSU_DDK_RELEASE: '20260828'
+      XKCNSU_SIGNING_PROFILE: release
+      XKCNSU_REQUIRE_RELEASE_SIGNING: '1'
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Check build scripts
+        shell: bash
+        run: |
+          for script in tools/build-*.sh tools/bootstrap-*.sh; do
+            bash -n "$script"
+          done
+
+      - name: Prepare pinned Linux tools
+        shell: bash
+        run: |
+          sudo env XKCNSU_ROOT="$GITHUB_WORKSPACE" XKCNSU_CACHE="$XKCNSU_CACHE" bash tools/bootstrap-xkcnsu.sh all
+          sudo env XKCNSU_ROOT="$GITHUB_WORKSPACE" XKCNSU_CACHE="$XKCNSU_CACHE" bash tools/bootstrap-kpatch-toolchain.sh
+
+      - name: Restore dedicated XKCNSU release signing key
+        env:
+          XKCNSU_RELEASE_KEYSTORE_B64: ${{ secrets.XKCNSU_RELEASE_KEYSTORE_B64 }}
+          XKCNSU_RELEASE_KEYSTORE_PASSWORD: ${{ secrets.XKCNSU_RELEASE_KEYSTORE_PASSWORD }}
+        shell: bash
+        run: |
+          sudo --preserve-env=XKCNSU_RELEASE_KEYSTORE_B64,XKCNSU_RELEASE_KEYSTORE_PASSWORD python3 - "$GITHUB_WORKSPACE/out/private" <<'PY'
+          import base64, os, pathlib, sys
+          os.umask(0o077)
+          key = os.environ.get("XKCNSU_RELEASE_KEYSTORE_B64", "")
+          password = os.environ.get("XKCNSU_RELEASE_KEYSTORE_PASSWORD", "")
+          if not key or not password:
+              raise SystemExit("Configure the two XKCNSU release signing secrets before running this workflow")
+          private = pathlib.Path(sys.argv[1])
+          private.mkdir(parents=True, mode=0o700, exist_ok=True)
+          private.chmod(0o700)
+          store = private / "xkcnsu-release.p12"
+          password_file = private / "release-password"
+          store.write_bytes(base64.b64decode(key, validate=True))
+          password_file.write_text(password + "\n")
+          store.chmod(0o600)
+          password_file.chmod(0o600)
+          PY
+          sudo --preserve-env=XKCNSU_SIGNING_PROFILE,XKCNSU_REQUIRE_RELEASE_SIGNING env XKCNSU_ROOT="$GITHUB_WORKSPACE" XKCNSU_CACHE="$XKCNSU_CACHE" bash tools/build-signing.sh
+
+      - name: Validate Rust and build priority ARM64 modules
+        shell: bash
+        run: |
+          sudo --preserve-env=XKCNSU_SIGNING_PROFILE,XKCNSU_REQUIRE_RELEASE_SIGNING env XKCNSU_ROOT="$GITHUB_WORKSPACE" XKCNSU_CACHE="$XKCNSU_CACHE" bash tools/build-rust.sh android-check
+          sudo --preserve-env=XKCNSU_SIGNING_PROFILE,XKCNSU_REQUIRE_RELEASE_SIGNING env XKCNSU_ROOT="$GITHUB_WORKSPACE" XKCNSU_CACHE="$XKCNSU_CACHE" bash tools/build-rust.sh android-clippy
+          sudo --preserve-env=XKCNSU_SIGNING_PROFILE,XKCNSU_REQUIRE_RELEASE_SIGNING env XKCNSU_ROOT="$GITHUB_WORKSPACE" XKCNSU_CACHE="$XKCNSU_CACHE" bash tools/build-rust.sh format-check
+          sudo --preserve-env=XKCNSU_SIGNING_PROFILE,XKCNSU_REQUIRE_RELEASE_SIGNING env XKCNSU_ROOT="$GITHUB_WORKSPACE" XKCNSU_CACHE="$XKCNSU_CACHE" bash tools/build-lkm.sh android14-6.1 both
+
+      - name: Build real 5.10 regression assets and run all host tests
+        shell: bash
+        run: |
+          sudo --preserve-env=XKCNSU_SIGNING_PROFILE,XKCNSU_REQUIRE_RELEASE_SIGNING env XKCNSU_ROOT="$GITHUB_WORKSPACE" XKCNSU_CACHE="$XKCNSU_CACHE" python3 tools/build-matrix.py --priority-already-passed --kmi android12-5.10 --stage-assets
+          sudo --preserve-env=XKCNSU_SIGNING_PROFILE,XKCNSU_REQUIRE_RELEASE_SIGNING env XKCNSU_ROOT="$GITHUB_WORKSPACE" XKCNSU_CACHE="$XKCNSU_CACHE" bash tools/build-rust.sh host-tests
+
+      - name: Build remaining KMI modules
+        if: inputs.kmi_scope == 'all'
+        shell: bash
+        run: |
+          for kmi in android13-5.10 android13-5.15 android14-5.15 android15-6.6 android16-6.12 android17-6.18; do
+            sudo --preserve-env=XKCNSU_SIGNING_PROFILE,XKCNSU_REQUIRE_RELEASE_SIGNING env XKCNSU_ROOT="$GITHUB_WORKSPACE" XKCNSU_CACHE="$XKCNSU_CACHE" bash tools/build-lkm.sh "$kmi" both
+          done
+
+      - name: Build KPatch, ksuinit, ksud, Manager and signed repack
+        shell: bash
+        env:
+          XKCNSU_REQUIRE_FULL_MATRIX: ${{ inputs.kmi_scope == 'all' && '1' || '0' }}
+        run: |
+          sudo --preserve-env=XKCNSU_SIGNING_PROFILE,XKCNSU_REQUIRE_RELEASE_SIGNING env XKCNSU_ROOT="$GITHUB_WORKSPACE" XKCNSU_CACHE="$XKCNSU_CACHE" bash tools/build-kpatch.sh
+          sudo --preserve-env=XKCNSU_SIGNING_PROFILE,XKCNSU_REQUIRE_RELEASE_SIGNING env XKCNSU_ROOT="$GITHUB_WORKSPACE" XKCNSU_CACHE="$XKCNSU_CACHE" bash tools/build-host.sh
+          sudo --preserve-env=XKCNSU_SIGNING_PROFILE,XKCNSU_REQUIRE_RELEASE_SIGNING env XKCNSU_ROOT="$GITHUB_WORKSPACE" XKCNSU_CACHE="$XKCNSU_CACHE" bash tools/build-release.sh snapshot --source-ready
+          for stage in ksuinit ksud manager repack; do
+            sudo --preserve-env=XKCNSU_SIGNING_PROFILE,XKCNSU_REQUIRE_RELEASE_SIGNING env XKCNSU_ROOT="$GITHUB_WORKSPACE" XKCNSU_CACHE="$XKCNSU_CACHE" XKCNSU_ABIS="$XKCNSU_ABIS" XKCNSU_REQUIRE_FULL_MATRIX="$XKCNSU_REQUIRE_FULL_MATRIX" bash tools/build-release.sh "$stage"
+          done
+
+      - name: Upload XKCNSU build products
+        uses: actions/upload-artifact@v7
+        with:
+          name: XKCNSU-universal
+          path: |
+            out/manager/*.apk
+            out/aarch64/*.ko
+            out/ksuinit/**
+            out/ksud/**
+            out/kpatch/**
+            out/tools/kptools
+            out/tools/ksud
+            out/manifests/**
+            out/toolchain/**
+          if-no-files-found: error
+
+      - name: Upload build logs
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: XKCNSU-build-logs
+          path: out/build-logs/

@@ -1,5 +1,5 @@
-#ifndef MILKSU_RELOCATION_HOST_STUBS_H
-#define MILKSU_RELOCATION_HOST_STUBS_H
+#ifndef XKCNSU_RELOCATION_HOST_STUBS_H
+#define XKCNSU_RELOCATION_HOST_STUBS_H
 
 #include <elf.h>
 #include <errno.h>

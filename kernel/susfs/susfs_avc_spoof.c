@@ -34,11 +34,11 @@ static u32 avc_su_sid;
 static u32 avc_priv_app_sid;
 static bool avc_spoof_enabled;
 static bool avc_registered;
-static const struct milksu_root_api *avc_root_api;
+static const struct xkcnsu_root_api *avc_root_api;
 
 static bool __nocfi noinline avc_shared_enabled(void)
 {
-	const struct milksu_root_api *api = READ_ONCE(avc_root_api);
+	const struct xkcnsu_root_api *api = READ_ONCE(avc_root_api);
 	bool enabled = false;
 
 	if (api)
@@ -317,7 +317,7 @@ static struct proc_dir_entry *avc_proc_entry;
 
 int susfs_avc_spoof_init(void)
 {
-	const struct milksu_root_api *api;
+	const struct xkcnsu_root_api *api;
 	int err;
 
 	api = susfs_root_api_acquire();

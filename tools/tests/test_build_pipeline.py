@@ -41,7 +41,7 @@ def elf(label):
 
 class TemporaryAssets(unittest.TestCase):
     def setUp(self):
-        self.temporary = tempfile.TemporaryDirectory(prefix="milksu pipeline tests ")
+        self.temporary = tempfile.TemporaryDirectory(prefix="xkcnsu pipeline tests ")
         self.addCleanup(self.temporary.cleanup)
         self.root = Path(self.temporary.name).resolve()
         self.out = self.root / "out"
@@ -64,12 +64,12 @@ class BuildVerifyTests(TemporaryAssets):
         super().setUp()
         self.certificate_hash = "ab" * 32
         self.put("version.properties",
-                 b"MILKSU_VERSION_NAME=0.2.0\nMILKSU_VERSION_CODE=32800\n")
+                 b"XKCNSU_VERSION_NAME=0.2.0\nXKCNSU_VERSION_CODE=32800\n")
         self.put("kernel/manager/apk_sign.c", b"#define CERT_MAX_LENGTH 512\n")
         self.put_json("out/private/certificate.json", {
             "certificate_size": 256,
             "KSU_EXPECTED_HASH": self.certificate_hash,
-            "KSU_PACKAGE_NAME": "io.milksu.manager",
+            "KSU_PACKAGE_NAME": "io.xkcnsu.manager",
         })
         self.assets = {name: elf("fresh-" + name) for name in ASSET_PATHS}
         for name, relative in ASSET_PATHS.items():
@@ -93,14 +93,14 @@ class BuildVerifyTests(TemporaryAssets):
         self.module_result = subprocess.CompletedProcess([], 0)
         self.signing = "Signer #1 certificate SHA-256 digest: " + self.certificate_hash
         self.badging = (
-            "package: name='io.milksu.manager' versionCode='32800' "
+            "package: name='io.xkcnsu.manager' versionCode='32800' "
             "versionName='0.2.0'\n"
         )
         self.manifest_xml = "E: manifest\n  E: application\n"
         self.environment = {
-            "MILKSU_ROOT": str(self.root),
-            "MILKSU_OUT": str(self.out),
-            "MILKSU_REQUIRE_FULL_MATRIX": "1",
+            "XKCNSU_ROOT": str(self.root),
+            "XKCNSU_OUT": str(self.out),
+            "XKCNSU_REQUIRE_FULL_MATRIX": "1",
         }
         self.module_run = mock.Mock(side_effect=self.run_modules)
         self.android_output = mock.Mock(side_effect=self.android_tool)
@@ -120,13 +120,13 @@ class BuildVerifyTests(TemporaryAssets):
 
     def test_verifies_every_packaged_daemon_abi(self):
         daemon = self.add_x86_daemon()
-        self.environment["MILKSU_ABIS"] = "arm64-v8a x86_64"
+        self.environment["XKCNSU_ABIS"] = "arm64-v8a x86_64"
         self.verify()
         self.assertEqual(self.read_json("out/manifests/final-apk.json")["native_daemons"],
                          {"arm64-v8a": sha(self.daemon), "x86_64": sha(daemon)})
 
     def test_rejects_missing_requested_abi(self):
-        self.environment["MILKSU_ABIS"] = "arm64-v8a x86_64"
+        self.environment["XKCNSU_ABIS"] = "arm64-v8a x86_64"
         with self.assertRaisesRegex(SystemExit, "daemon ABIs differ"):
             self.verify()
 
@@ -162,7 +162,7 @@ class BuildVerifyTests(TemporaryAssets):
 
     def run_modules(self, arguments, **kwargs):
         expected = [sys.executable, str(self.root / "tools/build-verify-modules.py")]
-        if self.environment["MILKSU_REQUIRE_FULL_MATRIX"] != "1":
+        if self.environment["XKCNSU_REQUIRE_FULL_MATRIX"] != "1":
             expected += ["--kmi", "android14-6.1", "--kmi", "android12-5.10"]
         self.assertEqual(arguments, expected)
         self.assertEqual(kwargs, {"check": False})
@@ -203,7 +203,7 @@ class BuildVerifyTests(TemporaryAssets):
             "apk": str(self.apk),
             "sha256": sha(self.apk.read_bytes()),
             "size": self.apk.stat().st_size,
-            "package_name": "io.milksu.manager",
+            "package_name": "io.xkcnsu.manager",
             "version_name": "0.2.0",
             "version_code": 32800,
             "certificate_sha256": self.certificate_hash,
@@ -212,14 +212,14 @@ class BuildVerifyTests(TemporaryAssets):
         })
 
     def test_partial_matrix_option_still_checks_embedded_assets(self):
-        self.environment["MILKSU_REQUIRE_FULL_MATRIX"] = "0"
+        self.environment["XKCNSU_REQUIRE_FULL_MATRIX"] = "0"
         self.put("out/" + ASSET_PATHS["kptools"], elf("stale-tool"))
         self.assert_asset_rejected("kptools")
 
     def test_manager_update_can_keep_the_bundled_kernel_version(self):
         self.put("version.properties",
-                 b"MILKSU_VERSION_NAME=0.2.1\nMILKSU_VERSION_CODE=32800\n"
-                 b"MILKSU_MANAGER_VERSION_CODE=32801\n")
+                 b"XKCNSU_VERSION_NAME=0.2.1\nXKCNSU_VERSION_CODE=32800\n"
+                 b"XKCNSU_MANAGER_VERSION_CODE=32801\n")
         self.badging = self.badging.replace("32800", "32801").replace("0.2.0", "0.2.1")
         self.verify()
         manifest = self.read_json("out/manifests/final-apk.json")
@@ -227,7 +227,7 @@ class BuildVerifyTests(TemporaryAssets):
         self.assertEqual(manifest["version_code"], 32801)
 
     def test_formal_release_rejects_undeclared_or_development_signing(self):
-        self.environment["MILKSU_REQUIRE_RELEASE_SIGNING"] = "1"
+        self.environment["XKCNSU_REQUIRE_RELEASE_SIGNING"] = "1"
         for profile, development in ((None, None), ("development", True),
                                      ("release", True), ("release", "false")):
             with self.subTest(profile=profile, development=development):
@@ -241,7 +241,7 @@ class BuildVerifyTests(TemporaryAssets):
                 self.assertFalse(self.final_manifest.exists())
 
     def test_formal_release_records_verified_signing_profile(self):
-        self.environment["MILKSU_REQUIRE_RELEASE_SIGNING"] = "1"
+        self.environment["XKCNSU_REQUIRE_RELEASE_SIGNING"] = "1"
         signing = self.read_json("out/private/certificate.json")
         signing.update(signing_profile="release", development_only=False)
         self.put_json("out/private/certificate.json", signing)
@@ -358,24 +358,24 @@ class BuildVerifyTests(TemporaryAssets):
 
 
 RELEASE_STUBS = r"""
-milksu_freeze() { :; }
-milksu_log() { :; }
-milksu_space() { :; }
-milksu_heavy_lock() { :; }
-milksu_die() { printf '%s\n' "$*" >&2; exit 1; }
-milksu_run() {
-    printf '%s\n' "$*" >>"$MILKSU_TEST_COMMAND_LOG"
-    if [[ "$1" == python3 && "$2" == "$MILKSU_ROOT/tools/build-verify-modules.py" ]]; then
+xkcnsu_freeze() { :; }
+xkcnsu_log() { :; }
+xkcnsu_space() { :; }
+xkcnsu_heavy_lock() { :; }
+xkcnsu_die() { printf '%s\n' "$*" >&2; exit 1; }
+xkcnsu_run() {
+    printf '%s\n' "$*" >>"$XKCNSU_TEST_COMMAND_LOG"
+    if [[ "$1" == python3 && "$2" == "$XKCNSU_ROOT/tools/build-verify-modules.py" ]]; then
         return
     fi
     case "$*" in
         "cargo clean --package ksud --target $triple --release") ;;
         "cargo build --locked --package ksud --target $triple --release")
-            mkdir -p "$MILKSU_TEST_CAPTURE/$arch"
-            cp -a "$work/userspace/ksud/bin/$arch/." "$MILKSU_TEST_CAPTURE/$arch/"
-            cp "$MILKSU_OUT/manifests/embedded-assets-$arch.json" "$MILKSU_TEST_CAPTURE/$arch.json"
+            mkdir -p "$XKCNSU_TEST_CAPTURE/$arch"
+            cp -a "$work/userspace/ksud/bin/$arch/." "$XKCNSU_TEST_CAPTURE/$arch/"
+            cp "$XKCNSU_OUT/manifests/embedded-assets-$arch.json" "$XKCNSU_TEST_CAPTURE/$arch.json"
             ;;
-        *) milksu_die "Unexpected external command: $*" ;;
+        *) xkcnsu_die "Unexpected external command: $*" ;;
     esac
 }
 """
@@ -415,16 +415,16 @@ class ReleaseKsudTests(TemporaryAssets):
         self.capture = self.root / "compile-inputs"
         self.environment = os.environ.copy()
         self.environment.update({
-            "MILKSU_ROOT": str(self.root),
-            "MILKSU_OUT": str(self.out),
-            "MILKSU_CACHE": str(self.root / "cache"),
-            "MILKSU_RELEASE_SOURCE": str(self.work),
-            "MILKSU_ABIS": "arm64-v8a",
-            "MILKSU_PACKAGE_NAME": "io.milksu.manager",
-            "MILKSU_ANDROID_API": "29",
-            "MILKSU_REQUIRE_FULL_MATRIX": "1",
-            "MILKSU_TEST_COMMAND_LOG": str(self.command_log),
-            "MILKSU_TEST_CAPTURE": str(self.capture),
+            "XKCNSU_ROOT": str(self.root),
+            "XKCNSU_OUT": str(self.out),
+            "XKCNSU_CACHE": str(self.root / "cache"),
+            "XKCNSU_RELEASE_SOURCE": str(self.work),
+            "XKCNSU_ABIS": "arm64-v8a",
+            "XKCNSU_PACKAGE_NAME": "io.xkcnsu.manager",
+            "XKCNSU_ANDROID_API": "29",
+            "XKCNSU_REQUIRE_FULL_MATRIX": "1",
+            "XKCNSU_TEST_COMMAND_LOG": str(self.command_log),
+            "XKCNSU_TEST_CAPTURE": str(self.capture),
             "CARGO_TARGET_DIR": str(self.root / "target"),
             "LIBCLANG_PATH": str(self.root / "unused-clang"),
         })
@@ -469,7 +469,7 @@ class ReleaseKsudTests(TemporaryAssets):
     def test_refreshes_stale_init_before_manifest_and_compile_for_both_abis(self):
         for abi in self.arches:
             with self.subTest(abi=abi):
-                self.environment["MILKSU_ABIS"] = abi
+                self.environment["XKCNSU_ABIS"] = abi
                 result = self.release()
                 self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
                 self.assert_build_inputs(abi)
@@ -478,7 +478,7 @@ class ReleaseKsudTests(TemporaryAssets):
                                  self.fresh[abi])
 
     def test_x86_daemon_build_does_not_require_arm64_kernel_modules(self):
-        self.environment["MILKSU_ABIS"] = "x86_64"
+        self.environment["XKCNSU_ABIS"] = "x86_64"
         for suffix in ("kernelsu", "susfs_guard_lkm"):
             (self.out / f"x86_64/android14-6.1_{suffix}.ko").unlink()
         result = self.release()
@@ -540,7 +540,7 @@ class ReleaseKsudTests(TemporaryAssets):
                 self.put("out/kpatch/aarch64/" + name, data)
 
     def test_partial_matrix_keeps_the_same_native_input_checks(self):
-        self.environment["MILKSU_REQUIRE_FULL_MATRIX"] = "0"
+        self.environment["XKCNSU_REQUIRE_FULL_MATRIX"] = "0"
         result = self.release()
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
         self.assert_build_inputs("arm64-v8a")

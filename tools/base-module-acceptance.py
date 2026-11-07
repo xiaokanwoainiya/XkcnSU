@@ -11,7 +11,7 @@ after-boot, run cleanup, reboot externally, then run cleanup again.
 --with-webui adds a static resource to the dedicated test module.
 
 Only the official module CLI mutates the module store. Direct device writes
-are confined to /data/adb/ksu/MilkSU/acceptance/<uuid4 hex>/ (including upload).
+are confined to /data/adb/ksu/XKCNSU/acceptance/<uuid4 hex>/ (including upload).
 The shared acceptance parent is created if missing. CLI-managed installer,
 logging and preinit side effects follow ksud's normal implementation.
 Inventories are recorded as fingerprints, never as user module contents.
@@ -38,8 +38,8 @@ import uuid
 import zipfile
 
 
-PREFIX = "milksu_acceptance_"
-BASE = "/data/adb/ksu/MilkSU/acceptance"
+PREFIX = "xkcnsu_acceptance_"
+BASE = "/data/adb/ksu/XKCNSU/acceptance"
 FLAGS = ("enabled", "update", "remove", "web", "action", "mount")
 SCHEMA = 1
 
@@ -82,10 +82,10 @@ def fixture(test_id, with_webui=False):
     module_id, directory = identity(test_id)
     props = {
         "id": module_id,
-        "name": "MilkSU ordinary module acceptance",
+        "name": "XKCNSU ordinary module acceptance",
         "version": "1.0",
         "versionCode": "1",
-        "author": "MilkSU acceptance",
+        "author": "XKCNSU acceptance",
         "description": "Dedicated harmless boot marker fixture " + test_id,
     }
     files = {
@@ -108,7 +108,7 @@ def fixture(test_id, with_webui=False):
     if with_webui:
         files["webroot/index.html"] = (
             "<!doctype html><html><head><meta charset=\"utf-8\">"
-            "<title>MilkSU acceptance</title></head><body>"
+            "<title>XKCNSU acceptance</title></head><body>"
             + test_id + "</body></html>\n"
         ).encode("ascii")
     archive = io.BytesIO()
@@ -346,7 +346,7 @@ class Acceptance:
             f"([ ! -e {shlex.quote(p)} ] && [ ! -L {shlex.quote(p)} ]) || exit 1"
             for p in (self.directory, self.active, self.staged)
         ]
-        parents = ("/data/adb", "/data/adb/ksu", "/data/adb/ksu/MilkSU", BASE)
+        parents = ("/data/adb", "/data/adb/ksu", "/data/adb/ksu/XKCNSU", BASE)
         guards += [f"[ ! -L {shlex.quote(p)} ] || exit 1" for p in parents]
         self.shell("set -eu; umask 077; " + "; ".join(guards)
                    + f"; mkdir -p {shlex.quote(BASE)}; mkdir {shlex.quote(self.directory)}")

@@ -18,7 +18,7 @@ use serde_json::{Value, json};
 use runtime::{Engine, NativeEngine, Probe, RuntimeModule};
 use store::{Record, Store};
 
-const STATE_ROOT: &str = "/data/adb/ksu/MilkSU/kpm";
+const STATE_ROOT: &str = "/data/adb/ksu/XKCNSU/kpm";
 
 #[derive(Debug, Subcommand)]
 pub enum KpmCommand {
@@ -141,7 +141,7 @@ fn require_engine(probe: &Probe) -> Result<()> {
         probe.managed(),
         failure(
             "incompatible_engine",
-            "Engine lacks MilkSU loader safety capabilities; update and reboot"
+            "Engine lacks XKCNSU loader safety capabilities; update and reboot"
         )
     );
     Ok(())
@@ -252,7 +252,7 @@ fn status_value(
         "active": probe.active,
         "reboot_required": reboot_required,
         "transition_failed": transition.get("transition_failed").and_then(Value::as_bool).unwrap_or(false),
-        "provider": if probe.active && probe.error.is_some() { "unknown" } else if unmanaged { "incompatible" } else if probe.managed() { "milksu" } else { "none" },
+        "provider": if probe.active && probe.error.is_some() { "unknown" } else if unmanaged { "incompatible" } else if probe.managed() { "xkcnsu" } else { "none" },
         "state_known": root && transition.get("state_known").and_then(Value::as_bool).unwrap_or(true),
         "version": probe.version,
         "capabilities": probe.capabilities,

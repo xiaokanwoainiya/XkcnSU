@@ -7,33 +7,33 @@ source "$(dirname -- "${BASH_SOURCE[0]}")/build-common.sh"
 
 lock_held=false
 case "${1:-}" in
-    "") [[ "$#" == 0 ]] || milksu_die "Usage: $0 [--lock-held]" ;;
-    --lock-held) [[ "$#" == 1 ]] || milksu_die "Usage: $0 [--lock-held]"; lock_held=true ;;
+    "") [[ "$#" == 0 ]] || xkcnsu_die "Usage: $0 [--lock-held]" ;;
+    --lock-held) [[ "$#" == 1 ]] || xkcnsu_die "Usage: $0 [--lock-held]"; lock_held=true ;;
     --help|-h) printf 'Usage: %s [--lock-held]\n' "$0"; exit 0 ;;
-    *) milksu_die "Usage: $0 [--lock-held]" ;;
+    *) xkcnsu_die "Usage: $0 [--lock-held]" ;;
 esac
 
-export MILKSU_JOBS=1
+export XKCNSU_JOBS=1
 export CARGO_BUILD_JOBS=1
 export CARGO_INCREMENTAL=0
-milksu_freeze "$@"
-milksu_log "kpatch-host-tests"
+xkcnsu_freeze "$@"
+xkcnsu_log "kpatch-host-tests"
 if [[ "$lock_held" == false ]]; then
-    milksu_heavy_lock
+    xkcnsu_heavy_lock
 else
     printf 'Using the caller-held heavy-build lock; jobs=1.\n'
 fi
 
-test_work="$MILKSU_CACHE/build/kpatch-host-tests"
+test_work="$XKCNSU_CACHE/build/kpatch-host-tests"
 mkdir -p "$test_work"
 test_run="$(mktemp -d "$test_work/run.XXXXXX")"
 host_cc="${HOST_CC:-cc}"
-test_sources="$MILKSU_ROOT/vendor/kpatch-next/tests"
+test_sources="$XKCNSU_ROOT/vendor/kpatch-next/tests"
 native_manifest="$test_sources/native/Cargo.toml"
 step_count=0
 printf 'HARNESS CACHE: %s\n' "$test_run"
 
-python3 - "$MILKSU_ROOT" "$test_run/sources-before.json" <<'PY'
+python3 - "$XKCNSU_ROOT" "$test_run/sources-before.json" <<'PY'
 import datetime
 import hashlib
 import json
@@ -80,8 +80,8 @@ pathlib.Path(sys.argv[2]).write_text(json.dumps(snapshot, indent=2) + "\n")
 PY
 
 write_manifest() {
-    python3 - "$MILKSU_ROOT" "$MILKSU_OUT/manifests/host-kpatch-final.json" \
-        "$test_run" "$MILKSU_LOG" "$1" "$lock_held" <<'PY'
+    python3 - "$XKCNSU_ROOT" "$XKCNSU_OUT/manifests/host-kpatch-final.json" \
+        "$test_run" "$XKCNSU_LOG" "$1" "$lock_held" <<'PY'
 import datetime
 import hashlib
 import json
@@ -126,11 +126,11 @@ if object_file.exists():
     defined = {line.split()[-1] for line in symbols.stdout.splitlines() if line.split()}
     overridden = sorted(set(helpers) & defined)
     symbol_check.update({
-        "renamed_global_memset": "milksu_host_global_memset" in defined,
+        "renamed_global_memset": "xkcnsu_host_global_memset" in defined,
         "libc_symbols_overridden": overridden,
         "ok": symbols.returncode == 0 and not overridden
               and set(symbol_check["required_helpers"]) <= defined
-              and "milksu_host_global_memset" in defined,
+              and "xkcnsu_host_global_memset" in defined,
     })
 alias_pattern = r"^#define\s+(" + "|".join(helpers) + r")\s+(lib_\w+)\s*$"
 production_aliases = dict(re.findall(alias_pattern,
@@ -213,14 +213,14 @@ run_step() {
         timeout --kill-after=5s "$duration" "$@"
     } >"$step_log" 2>&1; then
         printf '0\n' >"$step_log.exit"
-        cat "$step_log" >>"$MILKSU_LOG"
+        cat "$step_log" >>"$XKCNSU_LOG"
         awk '/PASS|test result:/ && shown++ < 6 { print }' "$step_log"
     else
         result=$?
         printf '%s\n' "$result" >"$step_log.exit"
-        cat "$step_log" >>"$MILKSU_LOG"
+        cat "$step_log" >>"$XKCNSU_LOG"
         printf 'FAILED: %s (exit %s); last 40 lines follow. Full log: %s\n' \
-            "$label" "$result" "$MILKSU_LOG" >&2
+            "$label" "$result" "$XKCNSU_LOG" >&2
         tail -n 40 "$step_log" >&2
         write_manifest "$result" || true
         exit "$result"
@@ -232,9 +232,9 @@ common_flags=(
     -Wall -Wextra -Werror -Wno-unused-parameter
 )
 run_step compile-baselib-object 90s "$host_cc" "${common_flags[@]}" -fno-builtin \
-    -Dmemset=milksu_host_global_memset -include stddef.h \
-    -idirafter "$MILKSU_ROOT/vendor/kpatch-next/kernel/include" \
-    -c "$MILKSU_ROOT/vendor/kpatch-next/kernel/base/baselib.c" -o "$test_run/baselib_host.o"
+    -Dmemset=xkcnsu_host_global_memset -include stddef.h \
+    -idirafter "$XKCNSU_ROOT/vendor/kpatch-next/kernel/include" \
+    -c "$XKCNSU_ROOT/vendor/kpatch-next/kernel/base/baselib.c" -o "$test_run/baselib_host.o"
 run_step compile-baselib 90s "$host_cc" "${common_flags[@]}" -fno-builtin \
     "$test_sources/baselib_host.c" "$test_run/baselib_host.o" -o "$test_run/baselib_host"
 run_step baselib 20s "$test_run/baselib_host"

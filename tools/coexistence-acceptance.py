@@ -9,7 +9,7 @@ import subprocess
 import time
 
 ECHO = "940d22509b5cb6acadc5f4fb7a208a152d14cdc5eacd0eb5b597ae6a6b481638"
-MARKER = "MilkSU-autoload-acceptance"
+MARKER = "XKCNSU-autoload-acceptance"
 
 
 def main():
@@ -60,7 +60,7 @@ def main():
 
     def echo():
         value = kpm("info", ECHO)
-        check(value["name"] == "milksu-test-echo", "Only the inert acceptance KPM is selected")
+        check(value["name"] == "xkcnsu-test-echo", "Only the inert acceptance KPM is selected")
         return value
 
     def susfs():
@@ -107,7 +107,7 @@ def main():
                       "SUSFS autoloaded beside the managed KPM engine")
                 check(root("cat", "/sys/module/susfs_guard_lkm/parameters/kpm_conflict") == "1",
                       "SUSFS reports the KPM conflict ownership mode")
-                probe = json.loads(root("/data/local/tmp/milksu-susfs-runtime-check"))
+                probe = json.loads(root("/data/local/tmp/xkcnsu-susfs-runtime-check"))
                 check(probe["completed"] and probe["root_still_visible"] and probe["app_hidden_after_rule"],
                       "SUSFS hides its temporary probe while root still sees it")
                 check(kpm("control", ECHO, "--args", "coexist")["output"] == "echo: coexist",

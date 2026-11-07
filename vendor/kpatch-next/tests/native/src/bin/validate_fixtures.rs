@@ -32,7 +32,7 @@ fn main() -> Result<()> {
         }
         imports.sort();
         imports.dedup();
-        let no_control = metadata.name == "milksu-test-no-ctl0";
+        let no_control = metadata.name == "xkcnsu-test-no-ctl0";
         ensure!(
             imports.iter().any(|name| name == "printk"),
             "Missing printk marker import"

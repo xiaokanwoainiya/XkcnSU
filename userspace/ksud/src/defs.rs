@@ -82,7 +82,7 @@ pub const VERSION_CODE: &str = env!("VERSION_CODE");
 pub const VERSION_NAME: &str = env!("VERSION_NAME");
 #[cfg(target_os = "android")]
 pub const FULL_VERSION: &str = const_format::formatcp!(
-    "MilkSU {VERSION_NAME} (uapi: {})",
+    "XKCNSU {VERSION_NAME} (uapi: {})",
     crate::ksu_uapi::KERNEL_SU_UAPI_VERSION
 );
 

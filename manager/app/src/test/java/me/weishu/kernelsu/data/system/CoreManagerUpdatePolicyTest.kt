@@ -18,13 +18,13 @@ class CoreManagerUpdatePolicyTest {
     private val hash = MessageDigest.getInstance("SHA-256").digest(bytes)
         .joinToString("") { "%02x".format(it) }
     private val certificate = "a".repeat(64)
-    private val installed = CoreApkIdentity("io.milksu.manager", 32800, "0.2.0", setOf(certificate))
+    private val installed = CoreApkIdentity("io.xkcnsu.manager", 32800, "0.2.0", setOf(certificate))
     private val candidate = installed.copy(versionCode = 32801, versionName = "0.2.1")
     private val release = LatestVersionInfo(
         versionCode = 32801,
-        downloadUrl = "https://github.com/Xiaogugtfgdfhgrh/MikSU/releases/download/v0.2.1/MilkSU_0.2.1_32801.apk",
+        downloadUrl = "https://github.com/fixture-owner/XKCNSU/releases/download/v0.2.1/XKCNSU_0.2.1_32801.apk",
         version = "0.2.1",
-        assetName = "MilkSU_0.2.1_32801.apk",
+        assetName = "XKCNSU_0.2.1_32801.apk",
         assetSize = bytes.size.toLong(),
         assetSha256 = hash,
     )
@@ -52,7 +52,7 @@ class CoreManagerUpdatePolicyTest {
     fun matchingHashNeverAuthorizesAnIncorrectApkIdentity() {
         for (invalid in listOf(
             candidate.copy(packageName = "me.weishu.kernelsu"),
-            candidate.copy(packageName = "io.milksu.manager.pr"),
+            candidate.copy(packageName = "io.xkcnsu.manager.pr"),
             candidate.copy(versionCode = 32800),
             candidate.copy(versionCode = 32802),
             candidate.copy(versionName = "0.2.0"),
@@ -181,15 +181,15 @@ class CoreManagerUpdatePolicyTest {
 
     @Test
     fun downloadEntryRechecksOfferInsteadOfTrustingCallerMetadata() {
-        assertTrue(CoreUpdatePolicy.isDownloadable(release, 32800))
+        assertTrue(CoreUpdatePolicy.isDownloadable(release, 32800, "https://api.github.com/repos/fixture-owner/XKCNSU/releases/latest"))
         for (invalid in listOf(
             release.copy(versionCode = 32800),
             release.copy(version = "0.2.0"),
             release.copy(assetName = "../update.apk"),
-            release.copy(assetName = "MilkSU_PR_0.2.1_32801.apk"),
-            release.copy(downloadUrl = release.downloadUrl.replace("/MikSU/", "/KernelSU/")),
+            release.copy(assetName = "XKCNSU_PR_0.2.1_32801.apk"),
+            release.copy(downloadUrl = release.downloadUrl.replace("/XKCNSU/", "/KernelSU/")),
             release.copy(assetSize = 0),
             release.copy(assetSha256 = "invalid"),
-        )) assertFalse(CoreUpdatePolicy.isDownloadable(invalid, 32800))
+        )) assertFalse(CoreUpdatePolicy.isDownloadable(invalid, 32800, "https://api.github.com/repos/fixture-owner/XKCNSU/releases/latest"))
     }
 }

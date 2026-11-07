@@ -19,13 +19,13 @@ use std::path::PathBuf;
 const MAX_PARTITION_BYTES: u64 = 512 * 1024 * 1024;
 
 #[cfg(any(target_os = "android", test))]
-const LEGACY_IMAGE_ROOT: &str = "/data/adb/milksu";
+const LEGACY_IMAGE_ROOT: &str = "/data/adb/xkcnsu";
 #[cfg(any(target_os = "android", test))]
-const IMAGE_ROOT: &str = "/data/adb/ksu/MilkSU";
+const IMAGE_ROOT: &str = "/data/adb/ksu/XKCNSU";
 #[cfg(any(target_os = "android", test))]
-const LEGACY_KPM_ROOT: &str = "/data/adb/milksu/kpm";
+const LEGACY_KPM_ROOT: &str = "/data/adb/xkcnsu/kpm";
 #[cfg(any(target_os = "android", test))]
-const KPM_ROOT: &str = "/data/adb/ksu/MilkSU/kpm";
+const KPM_ROOT: &str = "/data/adb/ksu/XKCNSU/kpm";
 
 #[cfg(any(target_os = "android", test))]
 #[derive(Debug)]
@@ -1187,9 +1187,9 @@ pub fn run(command: TransactionCommand) -> Result<()> {
     }
     let receipt = if apply {
         Some(install(
-            "milk-device-install",
+            "xkcnsu-device-install",
             &images,
-            &Path::new("/data/adb/ksu/MilkSU").join("image_transactions"),
+            &Path::new("/data/adb/ksu/XKCNSU").join("image_transactions"),
         )?)
     } else {
         None
@@ -1788,10 +1788,10 @@ mod tests {
             states: vec![StateChange {
                 path: Path::new(LEGACY_KPM_ROOT).join("integration/state_b.json"),
                 before: Some(
-                    br#"{"original_kernel":"/data/adb/milksu/kpm/integration/old.original"}"#
+                    br#"{"original_kernel":"/data/adb/xkcnsu/kpm/integration/old.original"}"#
                         .to_vec(),
                 ),
-                after: br#"{"original_kernel":"/data/adb/milksu/kpm/integration/new.original"}"#
+                after: br#"{"original_kernel":"/data/adb/xkcnsu/kpm/integration/new.original"}"#
                     .to_vec(),
             }],
             attempted: 1,
@@ -1860,7 +1860,7 @@ mod tests {
             match mutation {
                 0 => {
                     journal.entries[0].backup =
-                        PathBuf::from("/data/adb/milksu/kpm-other/0.before.img");
+                        PathBuf::from("/data/adb/xkcnsu/kpm-other/0.before.img");
                 }
                 1 => journal.entries[0].staged = PathBuf::from("/tmp/0.after.img"),
                 2 => journal.states[0].path = PathBuf::from("/data/adb/ksu/.allowlist"),
@@ -1894,9 +1894,9 @@ mod tests {
     #[test]
     fn legacy_and_unrelated_journals_are_not_relocated() {
         for path in [
-            "/data/adb/milksu/kpm/integration/transactions_b/old/journal.json",
-            "/data/adb/ksu/MilkSU/image_transactions/current/journal.json",
-            "/data/adb/ksu/MilkSU/kpm-other/current/journal.json",
+            "/data/adb/xkcnsu/kpm/integration/transactions_b/old/journal.json",
+            "/data/adb/ksu/XKCNSU/image_transactions/current/journal.json",
+            "/data/adb/ksu/XKCNSU/kpm-other/current/journal.json",
         ] {
             let (_, mut journal) = legacy_kpm_history("recovery_required");
             let original = serde_json::to_vec(&journal).unwrap();
@@ -1909,16 +1909,16 @@ mod tests {
     fn legacy_and_current_directories_select_matching_global_roots() {
         for (directory, root) in [
             (
-                "/data/adb/milksu/kpm/integration/transactions_b",
+                "/data/adb/xkcnsu/kpm/integration/transactions_b",
                 LEGACY_IMAGE_ROOT,
             ),
-            ("/data/adb/milksu/image_transactions", LEGACY_IMAGE_ROOT),
+            ("/data/adb/xkcnsu/image_transactions", LEGACY_IMAGE_ROOT),
             (
-                "/data/adb/ksu/MilkSU/kpm/integration/transactions_b",
+                "/data/adb/ksu/XKCNSU/kpm/integration/transactions_b",
                 IMAGE_ROOT,
             ),
-            ("/data/adb/ksu/MilkSU/image_transactions", IMAGE_ROOT),
-            ("/data/adb/milksu-other/image_transactions", IMAGE_ROOT),
+            ("/data/adb/ksu/XKCNSU/image_transactions", IMAGE_ROOT),
+            ("/data/adb/xkcnsu-other/image_transactions", IMAGE_ROOT),
         ] {
             assert_eq!(device_operation_root(Path::new(directory)), Path::new(root));
         }
@@ -1927,8 +1927,8 @@ mod tests {
     #[test]
     fn legacy_pending_blocks_new_install_preflight() {
         let root = tempfile::tempdir().unwrap();
-        let current = root.path().join("ksu/MilkSU/image-pending.json");
-        let legacy = root.path().join("milksu/image-pending.json");
+        let current = root.path().join("ksu/XKCNSU/image-pending.json");
+        let legacy = root.path().join("xkcnsu/image-pending.json");
         fs::create_dir_all(legacy.parent().unwrap()).unwrap();
         let owner = serde_json::to_vec(&Path::new(LEGACY_KPM_ROOT).join("journal.json")).unwrap();
         fs::write(&legacy, &owner).unwrap();
@@ -1941,8 +1941,8 @@ mod tests {
     #[test]
     fn new_pending_blocks_install_without_creating_legacy_storage() {
         let root = tempfile::tempdir().unwrap();
-        let current = root.path().join("ksu/MilkSU/image-pending.json");
-        let legacy = root.path().join("milksu/image-pending.json");
+        let current = root.path().join("ksu/XKCNSU/image-pending.json");
+        let legacy = root.path().join("xkcnsu/image-pending.json");
         fs::create_dir_all(current.parent().unwrap()).unwrap();
         fs::write(&current, b"current-owner").unwrap();
         assert!(check_install_pending(&current, &legacy).is_err());
@@ -1953,8 +1953,8 @@ mod tests {
     #[test]
     fn absent_pending_checks_do_not_create_storage() {
         let root = tempfile::tempdir().unwrap();
-        let current = root.path().join("ksu/MilkSU/image-pending.json");
-        let legacy = root.path().join("milksu/image-pending.json");
+        let current = root.path().join("ksu/XKCNSU/image-pending.json");
+        let legacy = root.path().join("xkcnsu/image-pending.json");
         check_install_pending(&current, &legacy).unwrap();
         assert!(!current.parent().unwrap().exists());
         assert!(!legacy.parent().unwrap().exists());
@@ -1963,8 +1963,8 @@ mod tests {
     #[test]
     fn dangling_legacy_pending_is_not_bypassed() {
         let root = tempfile::tempdir().unwrap();
-        let current = root.path().join("ksu/MilkSU/image-pending.json");
-        let legacy = root.path().join("milksu/image-pending.json");
+        let current = root.path().join("ksu/XKCNSU/image-pending.json");
+        let legacy = root.path().join("xkcnsu/image-pending.json");
         fs::create_dir_all(legacy.parent().unwrap()).unwrap();
         std::os::unix::fs::symlink("missing-owner", &legacy).unwrap();
         assert!(check_install_pending(&current, &legacy).is_err());

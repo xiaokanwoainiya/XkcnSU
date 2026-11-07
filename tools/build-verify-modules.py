@@ -18,12 +18,12 @@ def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--kmi", action="append", choices=KMIS)
     args = parser.parse_args()
-    root = Path(os.environ.get("MILKSU_ROOT", Path(__file__).resolve().parents[1]))
-    out = Path(os.environ.get("MILKSU_OUT", root / "out"))
+    root = Path(os.environ.get("XKCNSU_ROOT", Path(__file__).resolve().parents[1]))
+    out = Path(os.environ.get("XKCNSU_OUT", root / "out"))
     signing = json.loads((out / "private/certificate.json").read_text())
     release = configparser.ConfigParser(interpolation=None)
     release.read_string("[release]\n" + (root / "version.properties").read_text())
-    version_code = release["release"].getint("MILKSU_VERSION_CODE")
+    version_code = release["release"].getint("XKCNSU_VERSION_CODE")
     errors = []
     artifacts = []
     for kmi in args.kmi or KMIS:
@@ -36,7 +36,7 @@ def main() -> int:
             if data[:4] != b"\x7fELF" or int.from_bytes(data[18:20], "little") != 183:
                 errors.append(f"{path.name} is not an AArch64 ELF")
             if suffix == "kernelsu":
-                if f"welcome to MilkSU version {version_code}, package name ".encode() not in data:
+                if f"welcome to XKCNSU version {version_code}, package name ".encode() not in data:
                     errors.append(f"{path.name} has a stale root version")
                 if signing["KSU_EXPECTED_HASH"].encode() not in data:
                     errors.append(f"{path.name} has a stale Manager signing certificate")

@@ -13,7 +13,7 @@ use crate::{
     utils,
 };
 
-/// MilkSU userspace cli
+/// XKCNSU userspace cli
 #[derive(Parser, Debug)]
 #[command(author, version = defs::FULL_VERSION, about, long_about = None)]
 struct Args {
@@ -47,7 +47,7 @@ enum Commands {
         command: crate::kpm_image::ImageCommand,
     },
 
-    /// Manage MilkSU-compatible root modules
+    /// Manage XKCNSU-compatible root modules
     Module {
         #[command(subcommand)]
         command: Module,
@@ -101,7 +101,7 @@ enum Commands {
         params: Vec<String>,
     },
 
-    /// Install MilkSU userspace component to system
+    /// Install XKCNSU userspace component to system
     Install {
         #[arg(long, default_value = None)]
         libadbroot: Option<PathBuf>,
@@ -113,7 +113,7 @@ enum Commands {
     /// Unload the root module when its backend supports hot removal
     Unload,
 
-    /// Uninstall MilkSU modules and root
+    /// Uninstall XKCNSU modules and root
     Uninstall {
         #[arg(long, default_value_t = String::from(defs::DEFAULT_PACKAGE_NAME))]
         package_name: String,
@@ -137,13 +137,13 @@ enum Commands {
         command: Feature,
     },
 
-    /// Patch boot or init_boot images to apply MilkSU
+    /// Patch boot or init_boot images to apply XKCNSU
     BootPatch(BootPatchArgs),
 
-    /// Restore boot or init_boot images patched by MilkSU
+    /// Restore boot or init_boot images patched by XKCNSU
     BootRestore(BootRestoreArgs),
 
-    /// Patch MilkSU into a boot image
+    /// Patch XKCNSU into a boot image
     ///
     /// Always operates on a boot image; never selects init_boot or vendor_boot.
     BootPatchV2(BootPatchV2Args),
@@ -561,7 +561,7 @@ pub fn run() -> Result<()> {
     android_logger::init_once(
         Config::default()
             .with_max_level(crate::debug_select!(LevelFilter::Trace, LevelFilter::Info))
-            .with_tag("MilkSU"),
+            .with_tag("XKCNSU"),
     );
 
     ksucalls::setup_sigsys_handler();

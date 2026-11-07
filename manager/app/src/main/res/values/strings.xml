@@ -12,7 +12,7 @@
     <string name="home_lkm_update_available">A newer bundled LKM is available. Tap to update.</string>
     <string name="home_lkm_custom">Custom</string>
     <string name="home_unsupported">Unsupported</string>
-    <string name="home_unsupported_reason">MilkSU supports ARM64 GKI kernels. You can patch an image for a compatible GKI device.</string>
+    <string name="home_unsupported_reason">XKCNSU supports ARM64 GKI kernels. You can patch an image for a compatible GKI device.</string>
     <string name="home_device_model">Device model</string>
     <string name="home_kernel">Kernel version</string>
     <string name="home_manager_version">Manager version</string>
@@ -55,7 +55,7 @@
     <string name="module_repo_update_available">Update</string>
     <string name="module_repo_installed">Installed</string>
     <string name="module_repo_using_cache">Couldn\'t refresh the repository, showing the last downloaded copy</string>
-    <string name="module_repo_unsupported_schema">The module repository uses a newer format. Please update MilkSU Manager.</string>
+    <string name="module_repo_unsupported_schema">The module repository uses a newer format. Please update XKCNSU Manager.</string>
     <string name="module_repo_load_failed">Failed to load the module repository</string>
     <string name="module_repo_empty">No modules available</string>
     <string name="module_repo_not_in_index">This module is not in the repository index right now and can\'t be installed from here.</string>
@@ -113,7 +113,7 @@
     <string name="home_learn_kernelsu_url">https://kernelsu.org/guide/what-is-kernelsu.html</string>
     <string name="home_click_to_learn_kernelsu">Upstream documentation for root and module compatibility.</string>
     <string name="home_support_title">Support Us</string>
-    <string name="home_support_content">MilkSU builds on KernelSU. Support the upstream developers.</string>
+    <string name="home_support_content">XKCNSU builds on KernelSU. Support the upstream developers.</string>
     <string name="home_gki_warning">Starting from v3.0.0, the GKI work mode will be used only in testing environments. We do not recommend it for daily use, and image files will no longer be provided.</string>
     <string name="about_source_code"><![CDATA[View source code at %1$s<br/>Join our %2$s channel]]></string>
     <string name="profile" translatable="false">App Profile</string>
@@ -136,7 +136,7 @@
     <string name="require_kernel_version_gki">Kernel update required</string>
     <string name="settings_umount_modules_default">Umount modules by default</string>
     <string name="settings_umount_modules_default_summary">The global default value for \"Umount modules\" in App Profile. If enabled, it will remove all module modifications to the system for apps that don\'t have a profile set.</string>
-    <string name="profile_umount_modules_summary">Enabling this option allows MilkSU to restore files modified by modules for this app.</string>
+    <string name="profile_umount_modules_summary">Enabling this option allows XKCNSU to restore files modified by modules for this app.</string>
     <string name="profile_selinux_domain">Domain</string>
     <string name="profile_selinux_rules">Rules</string>
     <string name="recently_installed">Recently installed</string>
@@ -213,9 +213,9 @@
     <string name="settings_uninstall_temporary">Uninstall temporarily</string>
     <string name="settings_uninstall_permanent">Uninstall permanently</string>
     <string name="settings_restore_stock_image">Restore stock image</string>
-    <string name="settings_uninstall_temporary_message">Temporarily uninstall MilkSU, restore to original state after next reboot.</string>
-    <string name="settings_uninstall_permanent_message">Uninstall MilkSU (root and all modules) completely and permanently.</string>
-    <string name="settings_restore_stock_image_message">Restore the stock factory image (if a backup exists), usually before OTA; to uninstall MilkSU, use \"Uninstall permanently\".</string>
+    <string name="settings_uninstall_temporary_message">Temporarily uninstall XKCNSU, restore to original state after next reboot.</string>
+    <string name="settings_uninstall_permanent_message">Uninstall XKCNSU (root and all modules) completely and permanently.</string>
+    <string name="settings_restore_stock_image_message">Restore the stock factory image (if a backup exists), usually before OTA; to uninstall XKCNSU, use \"Uninstall permanently\".</string>
     <string name="flashing">Flashing</string>
     <string name="flash_success">Flash success</string>
     <string name="flash_failed">Flash failed</string>
@@ -231,7 +231,7 @@
     <string name="settings_selinux_hide_reboot_required">Reboot to take effect</string>
     <string name="settings_selinux_hide_failed">Error: %d</string>
     <string name="settings_sulog">SU Log</string>
-    <string name="settings_sulog_summary">Record root events into MilkSU SU log files</string>
+    <string name="settings_sulog_summary">Record root events into XKCNSU SU log files</string>
     <string name="feature_status_unsupported_summary">Kernel does not support this feature</string>
     <string name="feature_status_managed_summary">This feature is managed by a module</string>
     <string name="feature_status_forced_summary">This feature is forced by boot config</string>
@@ -328,14 +328,14 @@
     <string name="settings_adb_root" translatable="false">ADB Root</string>
     <string name="settings_adb_root_summary">Run adbd daemon with Root privileges</string>
     <string name="settings_shell_su_adb_only">Restrict shell root to ADB</string>
-    <string name="settings_shell_su_adb_only_summary">Extra check when Shell is granted root: only processes spawned by adbd or a MilkSU root process (e.g. an ADB module) can use it, preventing apps that obtain shell privileges from escalating to root</string>
+    <string name="settings_shell_su_adb_only_summary">Extra check when Shell is granted root: only processes spawned by adbd or a XKCNSU root process (e.g. an ADB module) can use it, preventing apps that obtain shell privileges from escalating to root</string>
     <string name="menu_sort">Sort</string>
     <string name="sort_by_name">Application name</string>
     <string name="sort_by_package_name">Package name</string>
     <string name="sort_by_install_time">Install time</string>
     <string name="sort_by_update_time">Update time</string>
     <string name="sort_reverse">Reverse</string>
-    <string name="profile_flags_desc_no_new_privs">Prevent further privilege escalation via MilkSU from within the context of this root profile</string>
+    <string name="profile_flags_desc_no_new_privs">Prevent further privilege escalation via XKCNSU from within the context of this root profile</string>
     <string name="module_shortcut_copy_scheme">Copy URL scheme</string>
     <string name="module_shortcut_scheme_copied">URL scheme copied</string>
     <string name="nav_rail_expand">Expand navigation rail</string>

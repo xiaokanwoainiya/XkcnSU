@@ -21,7 +21,7 @@ bool susfs_ksu_umount_gate_off = true;
  * pointer on every call; the default above is what makes that invariant hold even when init is
  * skipped. */
 static bool (*ksu_uid_should_umount_fn)(uid_t uid);
-static const struct milksu_root_api *ksu_umount_api;
+static const struct xkcnsu_root_api *ksu_umount_api;
 
 /* noinline __nocfi: an indirect call through a resolved address.  CFI checks indirect call sites, and
  * LTO would otherwise inline a small static helper back into a caller that is not marked. */
@@ -32,7 +32,7 @@ bool __nocfi noinline susfs_ksu_umount_ask(uid_t uid)
 
 int susfs_ksu_umount_gate_init(void)
 {
-	const struct milksu_root_api *api = susfs_root_api_acquire();
+	const struct xkcnsu_root_api *api = susfs_root_api_acquire();
 
 	if (IS_ERR(api))
 		return PTR_ERR(api);

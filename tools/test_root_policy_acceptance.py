@@ -47,7 +47,7 @@ class RootPolicyAcceptanceTests(unittest.TestCase):
                 self.assertEqual(len(arguments), 3)
                 self.assertEqual(shlex.split(arguments[2]), [
                     "logcat", "-d", "-b", "all", "-v", "raw",
-                    "-s", "MilkSUAcceptance:I", "*:S",
+                    "-s", "XKCNSUAcceptance:I", "*:S",
                 ])
                 text = "\n".join([json.dumps(event), "unrelated log", json.dumps(stale)])
             return subprocess.CompletedProcess(command, 0, text, "")
@@ -120,9 +120,9 @@ class RootPolicyAcceptanceTests(unittest.TestCase):
                 self.assertEqual(outer[:2], ["su", "-c"])
                 self.assertEqual(len(outer), 3)
                 self.assertEqual(outer[2],
-                                 "logcat -d -b all -v raw -s MilkSUAcceptance:I '*:S'")
+                                 "logcat -d -b all -v raw -s XKCNSUAcceptance:I '*:S'")
                 self.assertEqual(shlex.split(outer[2])[-2:],
-                                 ["MilkSUAcceptance:I", "*:S"])
+                                 ["XKCNSUAcceptance:I", "*:S"])
 
 
 if __name__ == "__main__":

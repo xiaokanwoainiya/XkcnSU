@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: GPL-2.0-only */
-#ifndef MILKSU_AVC_SPOOF_H
-#define MILKSU_AVC_SPOOF_H
+#ifndef XKCNSU_AVC_SPOOF_H
+#define XKCNSU_AVC_SPOOF_H
 
 #include <linux/types.h>
 

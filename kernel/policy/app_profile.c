@@ -18,7 +18,7 @@
 #include "selinux/selinux.h"
 #include "infra/su_mount_ns.h"
 #include "hook/tp_marker.h"
-#include "milksu_root.h"
+#include "xkcnsu_root.h"
 
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 7, 0)
 static struct group_info root_groups = { .usage = REFCOUNT_INIT(2) };
@@ -133,7 +133,7 @@ int escape_with_root_profile(void)
     struct root_profile *profile = NULL;
     struct user_struct *new_user;
 
-    if (!milksu_root_is_ready())
+    if (!xkcnsu_root_is_ready())
         return -EHOSTDOWN;
 
     cred = prepare_creds();

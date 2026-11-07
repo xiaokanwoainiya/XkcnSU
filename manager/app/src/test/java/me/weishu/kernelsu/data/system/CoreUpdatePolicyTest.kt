@@ -12,8 +12,9 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class CoreUpdatePolicyTest {
-    private val assetName = "MilkSU_0.2.1_32801.apk"
-    private val downloadRoot = "https://github.com/Xiaogugtfgdfhgrh/MikSU/releases/download"
+    private val endpoint = "https://api.github.com/repos/fixture-owner/XKCNSU/releases/latest"
+    private val assetName = "XKCNSU_0.2.1_32801.apk"
+    private val downloadRoot = "https://github.com/fixture-owner/XKCNSU/releases/download"
     private val sha256 = "a".repeat(64)
 
     private fun asset(
@@ -45,12 +46,12 @@ class CoreUpdatePolicyTest {
     }.toString()
 
     private fun select(body: String = release(), code: Int = 32800) =
-        CoreUpdatePolicy.release(200, body, code)
+        CoreUpdatePolicy.release(200, body, code, endpoint)
 
     @Test
-    fun defaultEndpointUsesTheRequestedRepository() {
+    fun defaultEndpointStaysUnconfiguredUntilTheForkHasItsOwnRepository() {
         assertEquals(
-            "https://api.github.com/repos/Xiaogugtfgdfhgrh/MikSU/releases/latest",
+            "",
             CoreUpdatePolicy.LATEST_RELEASE_URL,
         )
     }
@@ -85,7 +86,7 @@ class CoreUpdatePolicyTest {
         for (body in listOf(
             """{"ref":"refs/heads/main","after":"source-commit"}""",
             release(assets = emptyList()),
-            release(assets = listOf(asset(name = "MilkSU-source.zip"))),
+            release(assets = listOf(asset(name = "XKCNSU-source.zip"))),
         )) assertEquals(LatestVersionInfo(), select(body))
     }
 
@@ -95,7 +96,7 @@ class CoreUpdatePolicyTest {
         assertEquals(LatestVersionInfo(), select(release(prerelease = true)))
         assertEquals(
             LatestVersionInfo(),
-            CoreUpdatePolicy.release(200, release(), 32800, isPrBuild = true),
+            CoreUpdatePolicy.release(200, release(), 32800, endpoint, isPrBuild = true),
         )
         assertEquals(LatestVersionInfo(), select(release(tag = "v0.2.1-rc1")))
     }
@@ -110,24 +111,24 @@ class CoreUpdatePolicyTest {
     fun stableGradleAndArm64AssetNamesAreAccepted() {
         for (name in listOf(
             assetName,
-            "MilkSU_v0.2.1_32801-release.apk",
-            "MilkSU_0.2.1_32801-arm64-v8a.apk",
-            "MilkSU_0.2.1_32801-arm64-v8a-release.apk",
+            "XKCNSU_v0.2.1_32801-release.apk",
+            "XKCNSU_0.2.1_32801-arm64-v8a.apk",
+            "XKCNSU_0.2.1_32801-arm64-v8a-release.apk",
         )) assertEquals(name, select(release(listOf(asset(name = name)))).assetName)
     }
 
     @Test
     fun developmentUnsignedPrAndUpstreamArtifactsAreIgnored() {
         for (name in listOf(
-            "MilkSU-dev.apk",
-            "MilkSU_PR_0.2.1_32801.apk",
-            "MilkSU_0.2.1_32801-debug.apk",
-            "MilkSU_0.2.1_32801-repack-unsigned.apk",
-            "MilkSU_0.2.1_32801-repack-aligned.apk",
-            "MilkSU_0.2.1_32801-x86_64.apk",
+            "XKCNSU-dev.apk",
+            "XKCNSU_PR_0.2.1_32801.apk",
+            "XKCNSU_0.2.1_32801-debug.apk",
+            "XKCNSU_0.2.1_32801-repack-unsigned.apk",
+            "XKCNSU_0.2.1_32801-repack-aligned.apk",
+            "XKCNSU_0.2.1_32801-x86_64.apk",
             "KernelSU_0.2.1_32801-release.apk",
-            "MilkSU_0.2.1-dev_32801.apk",
-            "MilkSU_0.2.0_32801.apk",
+            "XKCNSU_0.2.1-dev_32801.apk",
+            "XKCNSU_0.2.0_32801.apk",
         )) assertEquals(LatestVersionInfo(), select(release(listOf(asset(name = name)))))
     }
 
@@ -135,8 +136,8 @@ class CoreUpdatePolicyTest {
     fun wrongRepositoryTagOrAssetUrlCannotBeOffered() {
         val correct = "$downloadRoot/v0.2.1/$assetName"
         for (url in listOf(
-            correct.replace("/MikSU/", "/KernelSU/"),
-            correct.replace("/Xiaogugtfgdfhgrh/", "/another-owner/"),
+            correct.replace("/XKCNSU/", "/KernelSU/"),
+            correct.replace("/fixture-owner/", "/another-owner/"),
             correct.replace("/v0.2.1/", "/v0.2.0/"),
             correct.replace(assetName, "another.apk"),
             correct.replace("https:", "http:"),
@@ -153,9 +154,9 @@ class CoreUpdatePolicyTest {
             asset(state = "new"),
             asset(size = 0),
             asset(size = -1),
-            asset(name = "MilkSU_0.2.1_2147483648.apk"),
-            asset(name = "MilkSU_0.2.1_2100000001.apk"),
-            asset(name = "MilkSU_0.2.1_0.apk"),
+            asset(name = "XKCNSU_0.2.1_2147483648.apk"),
+            asset(name = "XKCNSU_0.2.1_2100000001.apk"),
+            asset(name = "XKCNSU_0.2.1_0.apk"),
         )) assertEquals(LatestVersionInfo(), select(release(listOf(item))))
     }
 
@@ -163,10 +164,10 @@ class CoreUpdatePolicyTest {
     fun allAssetsAreExaminedAndHighestValidVersionCodeWins() {
         val body = release(listOf(
             JsonPrimitive("bad asset"),
-            asset(name = "MilkSU_0.2.1_32801-debug.apk"),
-            asset(name = "MilkSU_0.2.1_32801-release.apk"),
-            asset(name = "MilkSU_0.2.1_32803-release.apk"),
-            asset(name = "MilkSU_0.2.1_32802.apk"),
+            asset(name = "XKCNSU_0.2.1_32801-debug.apk"),
+            asset(name = "XKCNSU_0.2.1_32801-release.apk"),
+            asset(name = "XKCNSU_0.2.1_32803-release.apk"),
+            asset(name = "XKCNSU_0.2.1_32802.apk"),
         ))
         assertEquals(32803, select(body).versionCode)
     }
@@ -203,10 +204,10 @@ class CoreUpdatePolicyTest {
     @Test
     fun endpointMustBeAnExplicitGithubLatestReleaseApi() {
         for (endpoint in listOf(
-            "", "http://api.github.com/repos/Xiaogugtfgdfhgrh/MikSU/releases/latest",
-            "https://api.github.com/repos/Xiaogugtfgdfhgrh/MikSU/commits",
-            "https://api.github.com/repos/Xiaogugtfgdfhgrh/MikSU/releases/latest?token=secret",
-            "https://user:password@api.github.com/repos/Xiaogugtfgdfhgrh/MikSU/releases/latest",
+            "", "http://api.github.com/repos/fixture-owner/XKCNSU/releases/latest",
+            "https://api.github.com/repos/fixture-owner/XKCNSU/commits",
+            "https://api.github.com/repos/fixture-owner/XKCNSU/releases/latest?token=secret",
+            "https://user:password@api.github.com/repos/fixture-owner/XKCNSU/releases/latest",
             "https://example.com/latest",
         )) {
             assertEquals(
@@ -214,6 +215,7 @@ class CoreUpdatePolicyTest {
                 CoreUpdatePolicy.release(200, release(), 32800, endpoint),
             )
         }
+        assertEquals(LatestVersionInfo(), CoreUpdatePolicy.release(200, release(), 32800))
         assertTrue(select().downloadUrl.startsWith("$downloadRoot/"))
     }
 }

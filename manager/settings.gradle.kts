@@ -18,5 +18,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "MilkSU"
+rootProject.name = "XKCNSU"
 include(":app")

@@ -28,32 +28,32 @@
 
 static DEFINE_MUTEX(susfs_lifecycle_lock);
 static DECLARE_RWSEM(susfs_control_lock);
-static bool milksu_stopping;
-static bool milksu_unload_ready;
-static bool milksu_initialized;
-static bool milksu_self_pinned;
-static int milksu_load_error;
-static int milksu_restore_error;
-module_param_named(milksu_stopping, milksu_stopping, bool, 0444);
-module_param_named(milksu_unload_ready, milksu_unload_ready, bool, 0444);
-module_param_named(milksu_load_error, milksu_load_error, int, 0444);
-module_param_named(milksu_restore_error, milksu_restore_error, int, 0444);
+static bool xkcnsu_stopping;
+static bool xkcnsu_unload_ready;
+static bool xkcnsu_initialized;
+static bool xkcnsu_self_pinned;
+static int xkcnsu_load_error;
+static int xkcnsu_restore_error;
+module_param_named(xkcnsu_stopping, xkcnsu_stopping, bool, 0444);
+module_param_named(xkcnsu_unload_ready, xkcnsu_unload_ready, bool, 0444);
+module_param_named(xkcnsu_load_error, xkcnsu_load_error, int, 0444);
+module_param_named(xkcnsu_restore_error, xkcnsu_restore_error, int, 0444);
 
 bool susfs_stopping(void)
 {
-    return READ_ONCE(milksu_stopping);
+    return READ_ONCE(xkcnsu_stopping);
 }
 
 int susfs_restore_error(void)
 {
-    return READ_ONCE(milksu_restore_error);
+    return READ_ONCE(xkcnsu_restore_error);
 }
 
 void susfs_record_restore_error(const char *where, int error)
 {
     if (!error)
         return;
-    cmpxchg(&milksu_restore_error, 0, error < 0 ? error : -EIO);
+    cmpxchg(&xkcnsu_restore_error, 0, error < 0 ? error : -EIO);
     pr_err("susfs_guard_lkm: restore failed at %s (%d); retaining module and root references, reboot required\n",
            where, error);
 }
@@ -330,7 +330,7 @@ static struct susfs_layer {
      * (the later layers' own susfs_fp_init() calls are no-ops once the cache is set), and
      * there is no exit: only the pointer is cached, the entries are restored by their owner. */
     { "fp_hook",	susfs_fp_init,			NULL,			false, -1 },
-    /* Both gates are fatal in MilkSU: no callback may be cached without a ready,
+    /* Both gates are fatal in XKCNSU: no callback may be cached without a ready,
      * referenced root API provider. They release it after every dependent layer. */
     { "ksu_umount_gate", susfs_ksu_umount_gate_init,	susfs_ksu_umount_gate_exit, false, -1 },
     { "ksu_allow_gate",	susfs_ksu_allow_gate_init,	susfs_ksu_allow_gate_exit, false, -1 },
@@ -367,7 +367,7 @@ static struct susfs_layer {
 
 /* Diagnostic: make one layer's init fail, by 1-based index, to exercise the rollback path
  * on the device - a `fatal` layer failing must leave the load with nothing armed.
- * MilkSU makes fail_layer=2/3 fatal too: neither root gate is optional.
+ * XKCNSU makes fail_layer=2/3 fatal too: neither root gate is optional.
  *
  * Index map (keep this list and the fail_layer= references in tools/verify-gki.sh and the layer
  * comments in sync whenever a layer is inserted):
@@ -386,7 +386,7 @@ static noinline void susfs_layers_down(int upto)
 {
     int i;
 
-    WRITE_ONCE(milksu_stopping, true);
+    WRITE_ONCE(xkcnsu_stopping, true);
     for (i = upto; i >= 0; i--) {
         if (!susfs_layers[i].armed)
             continue;
@@ -408,7 +408,7 @@ static int susfs_prepare_unload_set(const char *value, const struct kernel_param
     if (rc || !requested)
         return rc ? rc : -EINVAL;
     mutex_lock(&susfs_lifecycle_lock);
-    if (!milksu_initialized) {
+    if (!xkcnsu_initialized) {
         rc = -EBUSY;
         goto out;
     }
@@ -416,7 +416,7 @@ static int susfs_prepare_unload_set(const char *value, const struct kernel_param
         rc = -EUCLEAN;
         goto out;
     }
-    if (milksu_unload_ready) {
+    if (xkcnsu_unload_ready) {
         rc = 0;
         goto out;
     }
@@ -424,7 +424,7 @@ static int susfs_prepare_unload_set(const char *value, const struct kernel_param
         rc = -EOPNOTSUPP;
         goto out;
     }
-    WRITE_ONCE(milksu_stopping, true);
+    WRITE_ONCE(xkcnsu_stopping, true);
     down_write(&susfs_control_lock);
     susfs_layers_down(SUSFS_L_COUNT - 1);
     up_write(&susfs_control_lock);
@@ -432,9 +432,9 @@ static int susfs_prepare_unload_set(const char *value, const struct kernel_param
         rc = -EUCLEAN;
         goto out;
     }
-    WRITE_ONCE(milksu_unload_ready, true);
-    if (milksu_self_pinned) {
-        milksu_self_pinned = false;
+    WRITE_ONCE(xkcnsu_unload_ready, true);
+    if (xkcnsu_self_pinned) {
+        xkcnsu_self_pinned = false;
         module_put(THIS_MODULE);
     }
     rc = 0;
@@ -445,7 +445,7 @@ out:
 
 static int susfs_prepare_unload_get(char *buffer, const struct kernel_param *kp)
 {
-    return scnprintf(buffer, PAGE_SIZE, "%d\n", READ_ONCE(milksu_unload_ready));
+    return scnprintf(buffer, PAGE_SIZE, "%d\n", READ_ONCE(xkcnsu_unload_ready));
 }
 
 static const struct kernel_param_ops susfs_prepare_unload_ops = {
@@ -609,12 +609,12 @@ static int __init susfs_init(void)
     /* A failed rollback must remain resident, even when module_init failed.
      * Report the failed bring-up through sysfs instead of freeing live code. */
     if (susfs_restore_error()) {
-        milksu_load_error = rc ? rc : -EUCLEAN;
-        WRITE_ONCE(milksu_stopping, true);
+        xkcnsu_load_error = rc ? rc : -EUCLEAN;
+        WRITE_ONCE(xkcnsu_stopping, true);
     }
     __module_get(THIS_MODULE);
-    milksu_self_pinned = true;
-    milksu_initialized = true;
+    xkcnsu_self_pinned = true;
+    xkcnsu_initialized = true;
     return 0;
 }
 

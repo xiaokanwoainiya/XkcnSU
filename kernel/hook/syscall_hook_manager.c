@@ -20,7 +20,7 @@
 #include "hook/setuid_hook.h"
 #include "hook/syscall_hook.h"
 #include "hook/syscall_event_bridge.h"
-#include "milksu_root.h"
+#include "xkcnsu_root.h"
 #if defined(__riscv)
 #include "hook/riscv64/syscall_regs.h"
 #endif
@@ -100,7 +100,7 @@ static struct kretprobe *syscall_unregfunc_rp = NULL;
 // sys_enter handler: redirect hooked syscalls to the dispatcher
 static void ksu_sys_enter_handler(void *data, struct pt_regs *regs, long id)
 {
-    if (!milksu_root_is_ready())
+    if (!xkcnsu_root_is_ready())
         return;
 #if defined(__x86_64__)
     if (unlikely(in_compat_syscall()))

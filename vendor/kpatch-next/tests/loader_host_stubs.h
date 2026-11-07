@@ -1,5 +1,5 @@
-#ifndef MILKSU_LOADER_HOST_STUBS_H
-#define MILKSU_LOADER_HOST_STUBS_H
+#ifndef XKCNSU_LOADER_HOST_STUBS_H
+#define XKCNSU_LOADER_HOST_STUBS_H
 
 #include <assert.h>
 #include <elf.h>

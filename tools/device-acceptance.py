@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Run explicit MilkSU acceptance phases and preserve the actual device output."""
+"""Run explicit XKCNSU acceptance phases and preserve the actual device output."""
 import argparse
 import json
 from pathlib import Path
@@ -71,8 +71,8 @@ def main():
                         if ": " in line)
         check(int(provider.get("version", "0")) > 0, "ready root provider responds to GET_INFO")
         check(int(provider.get("uapi_version", "0")) > 0, "root provider reports its UAPI version")
-        check("io.milksu.manager" in command(["pm", "path", "io.milksu.manager"]),
-              "MilkSU manager is installed")
+        check("io.xkcnsu.manager" in command(["pm", "path", "io.xkcnsu.manager"]),
+              "XKCNSU manager is installed")
         module_text = daemon("module", "list")
         check(isinstance(json.loads(module_text), list), "ordinary module list remains readable")
         daemon("feature", "list")

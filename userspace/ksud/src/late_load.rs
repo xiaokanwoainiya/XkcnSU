@@ -68,7 +68,7 @@ pub fn run(package_name: &String, kmi: Option<String>, allow_shell: bool) -> Res
         ksuinit::ensure_root_provider_ready()?;
         anyhow::ensure!(
             ksuinit::has_kernelsu(),
-            "MilkSU LKM was loaded but its root interface is not ready"
+            "XKCNSU LKM was loaded but its root interface is not ready"
         );
         info!("kernelsu.ko loaded successfully!");
         dump_process_info("after load_module");

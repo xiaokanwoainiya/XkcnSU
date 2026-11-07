@@ -77,7 +77,7 @@ object CoreManagerUpdater {
                     )
                     app.startActivity(Intent(Intent.ACTION_VIEW).apply {
                         setDataAndType(uri, APK_TYPE)
-                        clipData = ClipData.newRawUri("MilkSU update", uri)
+                        clipData = ClipData.newRawUri("XKCNSU update", uri)
                         addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_ACTIVITY_NEW_TASK)
                     })
                     Outcome.INSTALLER_OPENED
@@ -115,7 +115,7 @@ object CoreManagerUpdater {
     ): Pair<File, String> {
         val installed = installed(context)
         if (!CoreUpdatePolicy.isDownloadable(
-                release, installed.longVersionCode, BuildConfig.MILKSU_UPDATE_URL,
+                release, installed.longVersionCode, BuildConfig.XKCNSU_UPDATE_URL,
             ) || release.assetSize > CoreManagerUpdatePolicy.MAX_APK_BYTES
         ) throw IOException("The Manager update offer is not valid")
         val directory = File(context.cacheDir.canonicalFile, "manager_updates")

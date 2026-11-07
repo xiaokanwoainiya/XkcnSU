@@ -38,7 +38,7 @@ int main(void)
 {
     if (getuid() != 0)
         return 2;
-    char directory[] = "/data/local/tmp/milksu-susfs-check-XXXXXX";
+    char directory[] = "/data/local/tmp/xkcnsu-susfs-check-XXXXXX";
     if (!mkdtemp(directory) || chmod(directory, 0755))
         return 3;
     char path[256];
@@ -47,7 +47,7 @@ int main(void)
     int fd = open(path, O_WRONLY | O_CREAT | O_EXCL | O_CLOEXEC, 0644);
     if (fd < 0)
         return 5;
-    if (write(fd, "MilkSU\n", 7) != 7) {
+    if (write(fd, "XKCNSU\n", 7) != 7) {
         close(fd);
         return 6;
     }

@@ -20,20 +20,20 @@ import unittest
 
 
 TOOLS = Path(__file__).resolve().parents[1]
-DEV_ALIAS = "milksu-dev"
-RELEASE_ALIAS = "milksu-release"
+DEV_ALIAS = "xkcnsu-dev"
+RELEASE_ALIAS = "xkcnsu-release"
 REQUIRED_TOOLS = ("bash", "keytool", "openssl", "python3", "flock")
 
 KEYTOOL_WRAPPER = r"""#!/usr/bin/env bash
 set -euo pipefail
 operation="${1:-}"
-printf '%s\n' "$operation" >>"$MILKSU_TEST_KEYTOOL_LOG"
-"$MILKSU_TEST_REAL_KEYTOOL" "$@"
-if [[ "$operation" == -importkeystore && "${MILKSU_TEST_FAIL_AFTER_IMPORT:-0}" == 1 ]]; then
+printf '%s\n' "$operation" >>"$XKCNSU_TEST_KEYTOOL_LOG"
+"$XKCNSU_TEST_REAL_KEYTOOL" "$@"
+if [[ "$operation" == -importkeystore && "${XKCNSU_TEST_FAIL_AFTER_IMPORT:-0}" == 1 ]]; then
     printf 'Injected import completion failure.\n' >&2
     exit 67
 fi
-if [[ "$operation" == -exportcert && "${MILKSU_TEST_CORRUPT_PROMOTED_CERT:-0}" == 1 ]]; then
+if [[ "$operation" == -exportcert && "${XKCNSU_TEST_CORRUPT_PROMOTED_CERT:-0}" == 1 ]]; then
     previous=""
     destination=""
     for argument in "$@"; do
@@ -43,7 +43,7 @@ if [[ "$operation" == -exportcert && "${MILKSU_TEST_CORRUPT_PROMOTED_CERT:-0}" =
         previous="$argument"
     done
     if [[ "$destination" == */promoted.der ]]; then
-        cp -- "$MILKSU_TEST_OTHER_CERT" "$destination"
+        cp -- "$XKCNSU_TEST_OTHER_CERT" "$destination"
     fi
 fi
 """
@@ -60,7 +60,7 @@ def sha(path):
 class SigningTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.class_temp = tempfile.TemporaryDirectory(prefix="milksu signing fixtures ")
+        cls.class_temp = tempfile.TemporaryDirectory(prefix="xkcnsu signing fixtures ")
         cls.addClassCleanup(cls.class_temp.cleanup)
         cls.fixture_root = Path(cls.class_temp.name).resolve()
         cls.real_keytool = shutil.which("keytool")
@@ -86,7 +86,7 @@ class SigningTests(unittest.TestCase):
                 "-storetype", "PKCS12", "-keystore", str(store),
                 "-alias", stem, "-keyalg", "RSA", "-keysize", "2048",
                 "-sigalg", "SHA256withRSA", "-validity", "2",
-                "-dname", "CN=Disposable MilkSU Signing Test",
+                "-dname", "CN=Disposable XKCNSU Signing Test",
                 "-storepass:file", str(password_file),
                 "-keypass:file", str(password_file),
             ])
@@ -106,7 +106,7 @@ class SigningTests(unittest.TestCase):
         return result
 
     def setUp(self):
-        self.temporary = tempfile.TemporaryDirectory(prefix="milksu signing tests ")
+        self.temporary = tempfile.TemporaryDirectory(prefix="xkcnsu signing tests ")
         self.addCleanup(self.temporary.cleanup)
         self.root = Path(self.temporary.name).resolve()
         self.out = self.root / "out"
@@ -123,14 +123,14 @@ class SigningTests(unittest.TestCase):
             "LANG": "C.UTF-8",
             "LC_ALL": "C.UTF-8",
             "SOURCE_DATE_EPOCH": "1700000000",
-            "MILKSU_ROOT": str(self.root),
-            "MILKSU_OUT": str(self.out),
-            "MILKSU_CACHE": str(self.root / "cache"),
-            "MILKSU_TMPDIR": str(self.root / "cache/tmp"),
-            "MILKSU_PACKAGE_NAME": "io.milksu.manager",
-            "MILKSU_TEST_KEYTOOL_LOG": str(self.command_log),
-            "MILKSU_TEST_REAL_KEYTOOL": self.real_keytool,
-            "MILKSU_TEST_OTHER_CERT": str(self.fixture_root / (RELEASE_ALIAS + ".der")),
+            "XKCNSU_ROOT": str(self.root),
+            "XKCNSU_OUT": str(self.out),
+            "XKCNSU_CACHE": str(self.root / "cache"),
+            "XKCNSU_TMPDIR": str(self.root / "cache/tmp"),
+            "XKCNSU_PACKAGE_NAME": "io.xkcnsu.manager",
+            "XKCNSU_TEST_KEYTOOL_LOG": str(self.command_log),
+            "XKCNSU_TEST_REAL_KEYTOOL": self.real_keytool,
+            "XKCNSU_TEST_OTHER_CERT": str(self.fixture_root / (RELEASE_ALIAS + ".der")),
             "PYTHONDONTWRITEBYTECODE": "1",
         }
         (self.root / "home").mkdir()
@@ -153,12 +153,12 @@ class SigningTests(unittest.TestCase):
         )
         cert = self.private / (DEV_ALIAS + ".der")
         metadata = {
-            "package_name": "io.milksu.manager",
+            "package_name": "io.xkcnsu.manager",
             "key_alias": DEV_ALIAS,
             "certificate_der": str(cert),
             "keystore": str(self.private / (DEV_ALIAS + ".p12")),
             "certificate_size": cert.stat().st_size,
-            "KSU_PACKAGE_NAME": "io.milksu.manager",
+            "KSU_PACKAGE_NAME": "io.xkcnsu.manager",
             "KSU_EXPECTED_SIZE": f"0x{cert.stat().st_size:04x}",
             "KSU_EXPECTED_HASH": sha(cert),
             "development_only": True,
@@ -206,7 +206,7 @@ class SigningTests(unittest.TestCase):
     def sign(self, *arguments, profile=None, extra_environment=None):
         environment = dict(self.environment)
         if profile is not None:
-            environment["MILKSU_SIGNING_PROFILE"] = profile
+            environment["XKCNSU_SIGNING_PROFILE"] = profile
         if extra_environment:
             environment.update(extra_environment)
         result = subprocess.run(
@@ -365,7 +365,7 @@ class SigningTests(unittest.TestCase):
         before = self.material_hashes()
         result = self.sign(
             "--promote-development",
-            extra_environment={"MILKSU_TEST_FAIL_AFTER_IMPORT": "1"},
+            extra_environment={"XKCNSU_TEST_FAIL_AFTER_IMPORT": "1"},
         )
         self.assertNotEqual(result.returncode, 0)
         self.assertIn("-importkeystore", self.operations())
@@ -378,7 +378,7 @@ class SigningTests(unittest.TestCase):
         before = self.material_hashes()
         result = self.sign(
             "--promote-development",
-            extra_environment={"MILKSU_TEST_CORRUPT_PROMOTED_CERT": "1"},
+            extra_environment={"XKCNSU_TEST_CORRUPT_PROMOTED_CERT": "1"},
         )
         self.assertNotEqual(result.returncode, 0)
         self.assertIn("certificate", (result.stdout + result.stderr).lower())

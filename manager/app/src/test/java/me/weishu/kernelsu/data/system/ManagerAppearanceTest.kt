@@ -22,19 +22,19 @@ class ManagerAppearanceTest {
 
     @Test
     fun resourceStringRewritePreservesIdsPackageChunkAndUnrelatedStrings() {
-        val values = listOf("MilkSU", "unrelated", "res/a.png", "prefix MilkSU suffix")
+        val values = listOf("XKCNSU", "unrelated", "res/a.png", "prefix XKCNSU suffix")
         val pool = stringPool(values)
         val suffix = byteArrayOf(0, 2, 8, 0, 12, 0, 0, 0, 1, 0, 0, 0)
         val table = ByteBuffer.allocate(12 + pool.size + suffix.size).order(ByteOrder.LITTLE_ENDIAN).apply {
             putShort(2); putShort(12); putInt(capacity()); putInt(1); put(pool); put(suffix)
         }.array()
-        val renamed = ManagerResources.renameLabel(table, "MilkSU", "\u6211\u7684\u5de5\u5177")
+        val renamed = ManagerResources.renameLabel(table, "XKCNSU", "\u6211\u7684\u5de5\u5177")
         val size = ByteBuffer.wrap(renamed).order(ByteOrder.LITTLE_ENDIAN).getInt(16)
         assertEquals(listOf("\u6211\u7684\u5de5\u5177") + values.drop(1),
             ManagerStringPool.strings(renamed.copyOfRange(12, 12 + size)))
         assertEquals(suffix.toList(), renamed.takeLast(suffix.size))
         assertEquals(renamed.size, ByteBuffer.wrap(renamed).order(ByteOrder.LITTLE_ENDIAN).getInt(4))
-        val reverse = ManagerResources.renameLabel(renamed, "\u6211\u7684\u5de5\u5177", "MilkSU")
+        val reverse = ManagerResources.renameLabel(renamed, "\u6211\u7684\u5de5\u5177", "XKCNSU")
         assertEquals(values, ManagerStringPool.strings(reverse.copyOfRange(12, 12 + pool.size)))
     }
 
@@ -47,7 +47,7 @@ class ManagerAppearanceTest {
 
     @Test
     fun styledStringsKeepValidatedSpansAndCannotBeSilentlyShortened() {
-        val plain = stringPool(listOf("MilkSU", "b"))
+        val plain = stringPool(listOf("XKCNSU", "b"))
         val dataStart = 36
         val data = plain.copyOfRange(dataStart, plain.size)
         val styled = ByteBuffer.allocate(40 + data.size + 24).order(ByteOrder.LITTLE_ENDIAN).apply {
@@ -60,10 +60,10 @@ class ManagerAppearanceTest {
             putInt(1); putInt(0); putInt(5)
             putInt(-1); putInt(-1); putInt(-1)
         }.array()
-        assertEquals(listOf("MilkSU", "b", "Extra"),
+        assertEquals(listOf("XKCNSU", "b", "Extra"),
             ManagerStringPool.strings(ManagerStringPool.rewrite(styled, listOf("Extra"))))
         assertThrows(IllegalArgumentException::class.java) {
-            ManagerStringPool.rewrite(styled) { if (it == "MilkSU") "A" else it }
+            ManagerStringPool.rewrite(styled) { if (it == "XKCNSU") "A" else it }
         }
         val invalid = styled.copyOf().also {
             ByteBuffer.wrap(it).order(ByteOrder.LITTLE_ENDIAN).putInt(40 + data.size, 99)

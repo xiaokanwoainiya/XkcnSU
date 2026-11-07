@@ -35,7 +35,7 @@ data class ManagerTransfer(
         require(certificateSize in 1..1024 && ManagerManifest.validPackage(target) && hidden &&
             Regex("[0-9a-f]{64}").matches(targetCertificate))
         return ByteBuffer.allocate(333).order(ByteOrder.LITTLE_ENDIAN).apply {
-            putInt(0x4d534849)
+            putInt(0x584b4849) // XKHI; must match KSU_MANAGER_IDENTITY_MAGIC.
             putInt(1)
             putInt(certificateSize)
             put(target.toByteArray(Charsets.US_ASCII))

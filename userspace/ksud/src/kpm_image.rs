@@ -279,7 +279,7 @@ fn verify_recovered_kernel(
     validate_baseline(&recovered)?;
     ensure!(
         repatch(&recovered)? == kernel,
-        "boot kernel does not match the bundled MilkSU engine; refusing to adopt it"
+        "boot kernel does not match the bundled XKCNSU engine; refusing to adopt it"
     );
     Ok(recovered)
 }
@@ -442,7 +442,7 @@ pub fn run_image_command(command: ImageCommand) -> Result<()> {
 }
 
 #[cfg(target_os = "android")]
-const INTEGRATION_DIR: &str = "/data/adb/ksu/MilkSU/kpm/integration";
+const INTEGRATION_DIR: &str = "/data/adb/ksu/XKCNSU/kpm/integration";
 
 #[cfg(any(target_os = "android", test))]
 #[derive(Clone, Serialize, Deserialize)]
@@ -549,7 +549,7 @@ fn enabled_candidate(
     } else {
         ensure!(
             !context.active,
-            "active KPM engine has no verified MilkSU restoration record"
+            "active KPM engine has no verified XKCNSU restoration record"
         );
         ensure!(
             matches!(context.slot, "" | "_a" | "_b"),
@@ -804,7 +804,7 @@ pub fn transition_status(active: bool) -> Result<Value> {
     let disable = (|| -> Result<()> {
         let state = state
             .as_ref()
-            .context("KPM disable requires a verified MilkSU restoration record")?;
+            .context("KPM disable requires a verified XKCNSU restoration record")?;
         let slot = crate::boot_patch::get_slot_suffix(false);
         let kmi = crate::boot_patch::get_current_kmi()?;
         let source = image_transaction::read_image(&kernel_partition_path()?)?;
@@ -888,7 +888,7 @@ fn configuration_engine(state: Option<&IntegrationState>, active: bool) -> Resul
     } else {
         ensure!(
             !active,
-            "active KPM engine has no verified MilkSU restoration record"
+            "active KPM engine has no verified XKCNSU restoration record"
         );
         decoded_kernel(&source)?
     };
@@ -915,7 +915,7 @@ fn configuration_engine(state: Option<&IntegrationState>, active: bool) -> Resul
     )?;
     ensure!(
         info.lines().any(|line| line.trim() == "patched=false"),
-        "boot kernel has no verified MilkSU restoration record"
+        "boot kernel has no verified XKCNSU restoration record"
     );
     Ok(digest)
 }
@@ -1067,7 +1067,7 @@ pub fn set_enabled(enabled: bool) -> Result<Value> {
     } else {
         ensure!(
             !crate::kpm::engine_active(),
-            "active KPM engine has no MilkSU restoration record"
+            "active KPM engine has no XKCNSU restoration record"
         );
         return transition_status(false);
     };

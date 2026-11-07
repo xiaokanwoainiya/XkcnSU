@@ -5,7 +5,7 @@ use crate::boot_patch::{BootPatchArgs, BootRestoreArgs};
 use crate::lkm_image::BootPatchV2Args;
 use crate::{apk_sign, defs};
 
-/// MilkSU image tools
+/// XKCNSU image tools
 #[derive(Parser, Debug)]
 #[command(author, version = defs::VERSION_NAME, about, long_about = None)]
 struct Args {
@@ -21,13 +21,13 @@ enum Commands {
         command: crate::kpm_image::ImageCommand,
     },
 
-    /// Patch boot or init_boot images to apply MilkSU
+    /// Patch boot or init_boot images to apply XKCNSU
     BootPatch(BootPatchArgs),
 
-    /// Restore boot or init_boot images patched by MilkSU
+    /// Restore boot or init_boot images patched by XKCNSU
     BootRestore(BootRestoreArgs),
 
-    /// Patch MilkSU into a boot image
+    /// Patch XKCNSU into a boot image
     ///
     /// Always operates on a boot image; never selects init_boot or vendor_boot.
     BootPatchV2(BootPatchV2Args),

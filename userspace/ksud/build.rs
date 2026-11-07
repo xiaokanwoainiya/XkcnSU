@@ -21,8 +21,8 @@ fn get_release_version() -> io::Result<(u32, String)> {
             .map(|(_, value)| value.trim().to_owned())
             .ok_or_else(|| io::Error::other(format!("Missing {key} in version.properties")))
     };
-    let code = property("MILKSU_VERSION_CODE")?;
-    let name = property("MILKSU_VERSION_NAME")?;
+    let code = property("XKCNSU_VERSION_CODE")?;
+    let name = property("XKCNSU_VERSION_NAME")?;
     let version_code = code
         .parse::<u32>()
         .map_err(|_| io::Error::other("Invalid release version code"))?;
@@ -44,8 +44,8 @@ fn get_release_version() -> io::Result<(u32, String)> {
         ));
     }
     for (key, expected) in [
-        ("MILKSU_VERSION_CODE", &code),
-        ("MILKSU_VERSION_NAME", &name),
+        ("XKCNSU_VERSION_CODE", &code),
+        ("XKCNSU_VERSION_NAME", &name),
     ] {
         if let Ok(configured) = env::var(key)
             && configured.trim() != expected
@@ -249,13 +249,13 @@ fn assemble_bootstrap() {
 
 fn main() {
     assemble_bootstrap();
-    println!("cargo:rerun-if-env-changed=MILKSU_VERSION_NAME");
-    println!("cargo:rerun-if-env-changed=MILKSU_VERSION_CODE");
+    println!("cargo:rerun-if-env-changed=XKCNSU_VERSION_NAME");
+    println!("cargo:rerun-if-env-changed=XKCNSU_VERSION_CODE");
     println!("cargo:rerun-if-env-changed=KSU_PACKAGE_NAME");
 
-    let (code, name) = get_release_version().expect("Read shared MilkSU release version");
+    let (code, name) = get_release_version().expect("Read shared XKCNSU release version");
     if env::var("KSU_PACKAGE_NAME").is_err() {
-        println!("cargo:rustc-env=KSU_PACKAGE_NAME=io.milksu.manager");
+        println!("cargo:rustc-env=KSU_PACKAGE_NAME=io.xkcnsu.manager");
     }
     println!("cargo:rustc-env=VERSION_CODE={code}");
     println!("cargo:rustc-env=VERSION_NAME={name}");

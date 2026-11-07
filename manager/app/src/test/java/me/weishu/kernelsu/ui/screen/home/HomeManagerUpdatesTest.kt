@@ -8,13 +8,13 @@ import org.junit.Assert.*
 import org.junit.Test
 
 class HomeManagerUpdatesTest {
-    private val endpoint = CoreUpdatePolicy.LATEST_RELEASE_URL
+    private val endpoint = "https://api.github.com/repos/fixture-owner/XKCNSU/releases/latest"
     private val release = LatestVersionInfo(
         versionCode = 32801,
-        downloadUrl = "https://github.com/Xiaogugtfgdfhgrh/MikSU/releases/download/v0.2.1/MilkSU_0.2.1_32801.apk",
+        downloadUrl = "https://github.com/fixture-owner/XKCNSU/releases/download/v0.2.1/XKCNSU_0.2.1_32801.apk",
         changelog = "Actual release notes\nSecond line",
         version = "0.2.1",
-        assetName = "MilkSU_0.2.1_32801.apk",
+        assetName = "XKCNSU_0.2.1_32801.apk",
         assetSize = 45_678_901L,
         assetSha256 = "a".repeat(64),
     )
@@ -105,7 +105,7 @@ class HomeManagerUpdatesTest {
             release, 32800, true, endpoint, release.copy(downloadUrl = "https://example.com/update.apk"),
         ))
         val older = release.copy(
-            versionCode = 32800, assetName = "MilkSU_0.2.1_32800.apk",
+            versionCode = 32800, assetName = "XKCNSU_0.2.1_32800.apk",
             downloadUrl = release.downloadUrl.replace("32801.apk", "32800.apk"),
         )
         assertEquals(release, HomeManagerUpdates.offer(release, 32799, true, endpoint, older))
@@ -113,7 +113,7 @@ class HomeManagerUpdatesTest {
 
     @Test fun aNewerVerifiedOfferReplacesThePreviousOne() {
         val newer = release.copy(
-            versionCode = 32802, assetName = "MilkSU_0.2.1_32802.apk",
+            versionCode = 32802, assetName = "XKCNSU_0.2.1_32802.apk",
             downloadUrl = release.downloadUrl.replace("32801.apk", "32802.apk"),
         )
         assertEquals(newer, HomeManagerUpdates.offer(release, 32800, true, endpoint, newer))

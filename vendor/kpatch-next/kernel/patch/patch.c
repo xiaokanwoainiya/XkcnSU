@@ -64,9 +64,9 @@ static void before_rest_init(hook_fargs4_t *args, void *udata)
     if ((rc = resolve_struct())) goto out;
     log_boot("resolve_struct done: %d\n", rc);
 
-    /* MilkSU supplies credentials and SELinux policy. KPM loading must not
+    /* XKCNSU supplies credentials and SELinux policy. KPM loading must not
      * reserve task-stack storage or install a second root-policy provider. */
-    log_boot("MilkSU KPM: root policy and task lifecycle remain with MilkSU\n");
+    log_boot("XKCNSU KPM: root policy and task lifecycle remain with XKCNSU\n");
 
     rc = supercall_install();
     log_boot("supercall_install done: %d\n", rc);

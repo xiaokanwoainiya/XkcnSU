@@ -42,12 +42,12 @@ def main():
     try:
         check(args.execute, "Explicit UI execution is required")
         args.report.parent.mkdir(parents=True, exist_ok=True)
-        remote = "/data/local/tmp/milksu-susfs-ui-" + uuid.uuid4().hex + ".xml"
+        remote = "/data/local/tmp/xkcnsu-susfs-ui-" + uuid.uuid4().hex + ".xml"
         adb("shell", "uiautomator", "dump", remote)
         xml = args.report.with_suffix(".xml")
         adb("pull", remote, str(xml))
         rows = [node for node in ET.parse(xml).iter("node")
-                if node.get("package") == "io.milksu.manager"
+                if node.get("package") == "io.xkcnsu.manager"
                 and node.get("text") in ("SUSFS 集成", "SUSFS integration")]
         check(len(rows) == 1, "Exactly one SUSFS integration row is visible")
         before = json.loads(root("/data/adb/ksud", "susfs", "status"))

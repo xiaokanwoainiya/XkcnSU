@@ -233,7 +233,7 @@ private fun TopBar(
     BlurredBar(backdrop) {
         TopAppBar(
             color = barColor,
-            title = "MilkSU",
+            title = "XKCNSU",
             actions = {
                 RebootListPopupMiuix()
             },

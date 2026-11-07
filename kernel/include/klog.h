@@ -5,7 +5,7 @@
 
 #ifdef pr_fmt
 #undef pr_fmt
-#define pr_fmt(fmt) "MilkSU: " fmt
+#define pr_fmt(fmt) "XKCNSU: " fmt
 #endif
 
 #endif

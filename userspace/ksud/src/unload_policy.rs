@@ -2,7 +2,7 @@ use anyhow::{Context, Result, ensure};
 use std::fs;
 use std::path::Path;
 
-const REFUSAL: &str = "MilkSU hot-unload is unavailable; reboot with a restored image to remove root. Android services were not stopped.";
+const REFUSAL: &str = "XKCNSU hot-unload is unavailable; reboot with a restored image to remove root. Android services were not stopped.";
 
 pub fn ensure_supported(parameters: &Path) -> Result<()> {
     for parameter in ["unload_safe", "unload_supported"] {

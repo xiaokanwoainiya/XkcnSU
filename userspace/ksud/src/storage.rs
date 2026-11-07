@@ -102,8 +102,8 @@ fn migrate_kpm(source: &Path, destination: &Path) -> Result<()> {
 #[cfg(target_os = "android")]
 pub fn prepare_kpm() -> Result<()> {
     migrate_kpm(
-        Path::new("/data/adb/milksu/kpm"),
-        Path::new("/data/adb/ksu/MilkSU/kpm"),
+        Path::new("/data/adb/xkcnsu/kpm"),
+        Path::new("/data/adb/ksu/XKCNSU/kpm"),
     )
 }
 
@@ -115,8 +115,8 @@ mod tests {
     #[test]
     fn legacy_kpm_files_move_together_without_changing_contents() {
         let temporary = tempfile::tempdir().unwrap();
-        let source = temporary.path().join("adb/milksu/kpm");
-        let target = temporary.path().join("adb/ksu/MilkSU/kpm");
+        let source = temporary.path().join("adb/xkcnsu/kpm");
+        let target = temporary.path().join("adb/ksu/XKCNSU/kpm");
         fs::create_dir_all(source.join("integration")).unwrap();
         fs::write(source.join("registry.json"), b"registry").unwrap();
         fs::write(source.join("integration/state_b.json"), b"state").unwrap();
@@ -134,7 +134,7 @@ mod tests {
     fn current_storage_is_not_replaced_by_legacy_data() {
         let temporary = tempfile::tempdir().unwrap();
         let source = temporary.path().join("old/kpm");
-        let target = temporary.path().join("ksu/MilkSU/kpm");
+        let target = temporary.path().join("ksu/XKCNSU/kpm");
         fs::create_dir_all(&source).unwrap();
         fs::create_dir_all(&target).unwrap();
         fs::write(source.join("registry.json"), b"old").unwrap();
@@ -153,7 +153,7 @@ mod tests {
         assert!(
             migrate_kpm(
                 &temporary.path().join("alias/kpm"),
-                &temporary.path().join("ksu/MilkSU/kpm")
+                &temporary.path().join("ksu/XKCNSU/kpm")
             )
             .is_err()
         );
@@ -164,7 +164,7 @@ mod tests {
     fn active_registry_blocks_relocation() {
         let temporary = tempfile::tempdir().unwrap();
         let source = temporary.path().join("legacy/kpm");
-        let target = temporary.path().join("ksu/MilkSU/kpm");
+        let target = temporary.path().join("ksu/XKCNSU/kpm");
         fs::create_dir_all(&source).unwrap();
         let _registry = lock(&source.join(".lock")).unwrap();
         assert!(migrate_kpm(&source, &target).is_err());
@@ -178,7 +178,7 @@ mod tests {
         let source = temporary.path().join("legacy/kpm");
         fs::create_dir_all(&source).unwrap();
         fs::write(source.parent().unwrap().join("keep"), b"user data").unwrap();
-        migrate_kpm(&source, &temporary.path().join("ksu/MilkSU/kpm")).unwrap();
+        migrate_kpm(&source, &temporary.path().join("ksu/XKCNSU/kpm")).unwrap();
         assert_eq!(
             fs::read(source.parent().unwrap().join("keep")).unwrap(),
             b"user data"
@@ -189,7 +189,7 @@ mod tests {
     fn unfinished_image_recovery_blocks_migration() {
         let temporary = tempfile::tempdir().unwrap();
         let source = temporary.path().join("legacy/kpm");
-        let target = temporary.path().join("ksu/MilkSU/kpm");
+        let target = temporary.path().join("ksu/XKCNSU/kpm");
         fs::create_dir_all(&source).unwrap();
         fs::write(
             source.parent().unwrap().join("image-pending.json"),

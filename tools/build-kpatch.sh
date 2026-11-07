@@ -3,52 +3,52 @@
 set -Eeuo pipefail
 # shellcheck source=build-common.sh
 source "$(dirname -- "${BASH_SOURCE[0]}")/build-common.sh"
-milksu_freeze "$@"
-milksu_log kpatch
-milksu_space
-milksu_heavy_lock
-source_root="${MILKSU_SOURCE_ROOT:-$MILKSU_ROOT}"
+xkcnsu_freeze "$@"
+xkcnsu_log kpatch
+xkcnsu_space
+xkcnsu_heavy_lock
+source_root="${XKCNSU_SOURCE_ROOT:-$XKCNSU_ROOT}"
 vendor="$source_root/vendor/kpatch-next"
 [[ -f "$vendor/kernel/Makefile" && -f "$vendor/tools/CMakeLists.txt" ]] ||
-    milksu_die "Vendored KPatch source is not ready."
-work="$MILKSU_CACHE/build/kpatch-next"
-mkdir -p "$work" "$MILKSU_OUT/kpatch/aarch64" "$MILKSU_OUT/tools"
-exec {build_lock}>"$MILKSU_CACHE/build/kpatch-next.lock"
+    xkcnsu_die "Vendored KPatch source is not ready."
+work="$XKCNSU_CACHE/build/kpatch-next"
+mkdir -p "$work" "$XKCNSU_OUT/kpatch/aarch64" "$XKCNSU_OUT/tools"
+exec {build_lock}>"$XKCNSU_CACHE/build/kpatch-next.lock"
 flock "$build_lock"
-milksu_run rsync -a --delete --exclude=.git --exclude=target --exclude=build \
+xkcnsu_run rsync -a --delete --exclude=.git --exclude=target --exclude=build \
     --exclude='*.o' --exclude='*.elf' --exclude=kpimg --exclude=kptools --exclude=kpatch \
     "$vendor/" "$work/source/"
-target_compile="${MILKSU_KPATCH_TARGET_COMPILE:-$MILKSU_CACHE/toolchains/arm-gnu-toolchain-12.2.rel1-x86_64-aarch64-none-elf/bin/aarch64-none-elf-}"
+target_compile="${XKCNSU_KPATCH_TARGET_COMPILE:-$XKCNSU_CACHE/toolchains/arm-gnu-toolchain-12.2.rel1-x86_64-aarch64-none-elf/bin/aarch64-none-elf-}"
 if [[ ! -x "${target_compile}gcc" ]]; then
-    bash "$MILKSU_ROOT/tools/bootstrap-kpatch-toolchain.sh"
+    bash "$XKCNSU_ROOT/tools/bootstrap-kpatch-toolchain.sh"
 fi
-milksu_run make -C "$work/source/kernel" "TARGET_COMPILE=$target_compile" clean
-milksu_run make -C "$work/source/kernel" -j"$MILKSU_JOBS" \
+xkcnsu_run make -C "$work/source/kernel" "TARGET_COMPILE=$target_compile" clean
+xkcnsu_run make -C "$work/source/kernel" -j"$XKCNSU_JOBS" \
     "TARGET_COMPILE=$target_compile"
-mkdir -p "$MILKSU_OUT/manifests"
-milksu_run python3 "$vendor/tests/check_loader_relocations.py" \
+mkdir -p "$XKCNSU_OUT/manifests"
+xkcnsu_run python3 "$vendor/tests/check_loader_relocations.py" \
     --object "$work/source/kernel/patch/module/module.o" \
     --readelf "${target_compile}readelf" \
-    --report "$MILKSU_OUT/manifests/kpatch-loader-relocations.json"
-milksu_run cmake -S "$work/source/tools" -B "$work/host" -G Ninja \
+    --report "$XKCNSU_OUT/manifests/kpatch-loader-relocations.json"
+xkcnsu_run cmake -S "$work/source/tools" -B "$work/host" -G Ninja \
     -DCMAKE_BUILD_TYPE=Release -DCMAKE_POLICY_VERSION_MINIMUM=3.5
-milksu_run cmake --build "$work/host" -j"$MILKSU_JOBS"
-milksu_run cmake -S "$work/source/tools" -B "$work/android" -G Ninja \
+xkcnsu_run cmake --build "$work/host" -j"$XKCNSU_JOBS"
+xkcnsu_run cmake -S "$work/source/tools" -B "$work/android" -G Ninja \
     "-DCMAKE_TOOLCHAIN_FILE=$ANDROID_NDK_HOME/build/cmake/android.toolchain.cmake" \
     -DCMAKE_BUILD_TYPE=Release -DCMAKE_POLICY_VERSION_MINIMUM=3.5 \
     -DANDROID_PLATFORM=android-26 -DANDROID_ABI=arm64-v8a \
     -DCMAKE_EXE_LINKER_FLAGS=-Wl,-z,max-page-size=16384
-milksu_run cmake --build "$work/android" -j"$MILKSU_JOBS"
-cp "$work/source/kernel/kpimg" "$MILKSU_OUT/kpatch/aarch64/kpimg"
-cp "$work/source/kernel/kpimg.elf" "$MILKSU_OUT/kpatch/aarch64/kpimg.elf"
-cp "$work/android/kptools" "$MILKSU_OUT/kpatch/aarch64/kptools"
-cp "$work/host/kptools" "$MILKSU_OUT/tools/kptools"
-milksu_run file "$MILKSU_OUT/kpatch/aarch64/kptools" "$MILKSU_OUT/kpatch/aarch64/kpimg.elf"
-milksu_run "$MILKSU_OUT/tools/kptools" --help
-sha256sum "$MILKSU_OUT/kpatch/aarch64/"* "$MILKSU_OUT/tools/kptools" \
-    >"$MILKSU_OUT/kpatch/SHA256SUMS"
-cat "$MILKSU_OUT/kpatch/SHA256SUMS"
-python3 - "$vendor" "$MILKSU_OUT/kpatch/source-manifest.json" "$target_compile" <<'PY'
+xkcnsu_run cmake --build "$work/android" -j"$XKCNSU_JOBS"
+cp "$work/source/kernel/kpimg" "$XKCNSU_OUT/kpatch/aarch64/kpimg"
+cp "$work/source/kernel/kpimg.elf" "$XKCNSU_OUT/kpatch/aarch64/kpimg.elf"
+cp "$work/android/kptools" "$XKCNSU_OUT/kpatch/aarch64/kptools"
+cp "$work/host/kptools" "$XKCNSU_OUT/tools/kptools"
+xkcnsu_run file "$XKCNSU_OUT/kpatch/aarch64/kptools" "$XKCNSU_OUT/kpatch/aarch64/kpimg.elf"
+xkcnsu_run "$XKCNSU_OUT/tools/kptools" --help
+sha256sum "$XKCNSU_OUT/kpatch/aarch64/"* "$XKCNSU_OUT/tools/kptools" \
+    >"$XKCNSU_OUT/kpatch/SHA256SUMS"
+cat "$XKCNSU_OUT/kpatch/SHA256SUMS"
+python3 - "$vendor" "$XKCNSU_OUT/kpatch/source-manifest.json" "$target_compile" <<'PY'
 import hashlib, json, pathlib, subprocess, sys
 root, output = map(pathlib.Path, sys.argv[1:3])
 sources = []
@@ -63,4 +63,4 @@ output.write_text(json.dumps({
     "source_files": sources,
 }, indent=2) + "\n")
 PY
-milksu_space
+xkcnsu_space

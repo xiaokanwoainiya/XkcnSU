@@ -11,7 +11,7 @@ import java.nio.ByteBuffer
 import java.nio.ByteOrder
 
 class ManagerManifestTest {
-    private val source = "io.milksu.manager"
+    private val source = "io.xkcnsu.manager"
     private val target = "com.example.application"
 
     @Test

@@ -95,7 +95,7 @@ pub fn init() -> Result<()> {
     // Setup kernel log first
     setup_kmsg();
 
-    log::info!("Hello, MilkSU!");
+    log::info!("Hello, XKCNSU!");
 
     // mount /proc to access kernel interface
     let _dontdrop = prepare_mount();
@@ -136,7 +136,7 @@ fn load_module_from_path(path: &str) -> Result<()> {
     ksuinit::ensure_root_provider_ready()?;
     anyhow::ensure!(
         ksuinit::has_kernelsu(),
-        "MilkSU LKM is resident without a ready root interface"
+        "XKCNSU LKM is resident without a ready root interface"
     );
     Ok(())
 }

@@ -31,7 +31,7 @@
 #include "hook/syscall_hook.h"
 #include "hook/syscall_event_bridge.h"
 #include "preinit/preinit.h"
-#include "milksu_root.h"
+#include "xkcnsu_root.h"
 
 // clang-format off
 static const char KERNEL_SU_RC[] =
@@ -472,7 +472,7 @@ static void ksu_install_rc_hook(struct file *file)
     }
     // replace the file_operations
     replace_fops(file, fops_get(&fops_proxy));
-    milksu_root_pin_callbacks();
+    xkcnsu_root_pin_callbacks();
 }
 
 static void ksu_handle_sys_read(unsigned int fd, char __user **buf_ptr, size_t *count_ptr)
@@ -581,7 +581,7 @@ static long ksu_sys_read_body(const struct pt_regs *regs)
     char __user **buf_ptr = (char __user **)&PT_REGS_PARM2(regs);
     size_t *count_ptr = (size_t *)&PT_REGS_PARM3(regs);
 
-    if (milksu_root_is_ready())
+    if (xkcnsu_root_is_ready())
         ksu_handle_sys_read(fd, buf_ptr, count_ptr);
     return orig_sys_read(regs);
 }
@@ -594,7 +594,7 @@ static long ksu_sys_fstat_body(const struct pt_regs *regs)
     bool is_rc = false;
     long ret;
 
-    if (!milksu_root_is_ready())
+    if (!xkcnsu_root_is_ready())
         return orig_sys_fstat(regs);
     struct file *file = fget(fd);
     if (file) {

@@ -65,7 +65,7 @@ class HomeViewModel(
                     susfsInfo = it.susfsInfo,
                     latestVersionInfo = HomeManagerUpdates.offer(
                         it.latestVersionInfo, baseState.currentManagerVersionCode,
-                        updatesEnabled(), BuildConfig.MILKSU_UPDATE_URL,
+                        updatesEnabled(), BuildConfig.XKCNSU_UPDATE_URL,
                     ),
                 )
             }
@@ -75,7 +75,7 @@ class HomeViewModel(
                     it.copy(
                         latestVersionInfo = HomeManagerUpdates.offer(
                             it.latestVersionInfo, it.currentManagerVersionCode,
-                            updatesEnabled(), BuildConfig.MILKSU_UPDATE_URL, latestVersionInfo,
+                            updatesEnabled(), BuildConfig.XKCNSU_UPDATE_URL, latestVersionInfo,
                         ),
                     )
                 }

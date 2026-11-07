@@ -8,7 +8,7 @@ import java.nio.ByteOrder
 
 class ManagerTransferTest {
     private val transfer = ManagerTransfer(
-        "a".repeat(64), "io.milksu.manager", "com.example.application",
+        "a".repeat(64), "io.xkcnsu.manager", "com.example.application",
         10333, 10334, 32801, "0.2.1", "b".repeat(64), "c".repeat(64), true, 1_000_000L,
     )
 
@@ -52,7 +52,7 @@ class ManagerTransferTest {
         val record = transfer.identityRecord(695)
         assertEquals(333, record.size)
         val bytes = ByteBuffer.wrap(record).order(ByteOrder.LITTLE_ENDIAN)
-        assertEquals(0x4d534849, bytes.int)
+        assertEquals(0x584b4849, bytes.int)
         assertEquals(1, bytes.int)
         assertEquals(695, bytes.int)
         assertEquals(transfer.target, record.copyOfRange(12, 268)
