@@ -164,6 +164,19 @@ pub fn avc_conflict() -> bool {
 }
 
 fn status(runtime_only: bool) -> Result<Value> {
+    if crate::ksucalls::is_late_load() {
+        return Ok(json!({
+            "supported": false,
+            "runtime_supported": false,
+            "active": false,
+            "configured_enabled": false,
+            "reboot_required": false,
+            "can_configure": false,
+            "can_enable": false,
+            "can_disable": false,
+            "reason": crate::ksucalls::JAILBREAK_INTEGRATION_REASON,
+        }));
+    }
     let probe = NativeEngine.probe();
     let root = unsafe { libc::getuid() } == 0;
     let transition = if root {
@@ -676,6 +689,8 @@ fn execute(command: KpmCommand) -> Result<Value> {
     if let KpmCommand::Status { runtime_only } = command {
         return status(runtime_only);
     }
+    crate::ksucalls::ensure_kernel_integrations_allowed()
+        .map_err(|error| failure("jailbreak_mode", error.to_string()))?;
     require_root()?;
     if let KpmCommand::Integration { action } = command {
         return crate::kpm_image::set_enabled(action.enabled());
@@ -725,6 +740,9 @@ pub fn run(command: KpmCommand) -> Result<()> {
 /// Returns root, registry, kernel, or auto-load failures. Failed modules remain
 /// stored, and their auto-load setting is disabled until an explicit retry.
 pub fn load_autoload() -> Result<()> {
+    if crate::ksucalls::is_late_load() {
+        return Ok(());
+    }
     require_root()?;
     if !crate::kpm_image::configured_enabled()? {
         return Ok(());

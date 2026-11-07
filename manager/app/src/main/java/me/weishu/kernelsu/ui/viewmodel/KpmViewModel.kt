@@ -14,6 +14,7 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import me.weishu.kernelsu.Natives
+import me.weishu.kernelsu.R
 import me.weishu.kernelsu.data.system.BackendException
 import me.weishu.kernelsu.data.system.KpmImport
 import me.weishu.kernelsu.data.system.KpmReport
@@ -30,7 +31,7 @@ import me.weishu.kernelsu.ui.util.getRootShell
 class KpmViewModel : ViewModel() {
     private val integrationPreferences = ksuApp.getSharedPreferences("system_integration", Context.MODE_PRIVATE)
     private val _uiState = MutableStateFlow(
-        KpmUiState(
+        if (Natives.isLateLoadMode) jailbreakState() else KpmUiState(
             kpmTabEnabled = integrationPreferences.getBoolean("kpm_enabled", false),
             navigationReady = integrationPreferences.contains("kpm_enabled"),
         )
@@ -38,9 +39,12 @@ class KpmViewModel : ViewModel() {
     val uiState = _uiState.asStateFlow()
     private val _homeStartupState = MutableStateFlow(
         HomeStartupState(
-            cachedSusfsEnabled = if (integrationPreferences.contains("home_susfs_enabled")) {
-                integrationPreferences.getBoolean("home_susfs_enabled", false)
-            } else null,
+            cachedSusfsEnabled = when {
+                Natives.isLateLoadMode -> false
+                integrationPreferences.contains("home_susfs_enabled") ->
+                    integrationPreferences.getBoolean("home_susfs_enabled", false)
+                else -> null
+            },
         ),
     )
     val homeStartupState = _homeStartupState.asStateFlow()
@@ -48,12 +52,18 @@ class KpmViewModel : ViewModel() {
     private var integrationVerificationJob: Job? = null
     private var detailId: String? = null
 
+    private fun jailbreakState() = KpmUiState(
+        unavailable = ksuApp.getString(R.string.jailbreak_integrations_disabled),
+        navigationReady = true,
+    )
+
     fun prewarmIntegration() {
         if (integrationVerificationJob?.isActive == true) return
         integrationVerificationJob = viewModelScope.launch {
             val report = withContext(Dispatchers.IO) {
                 val eligible = runCatching {
-                    Natives.isManager && Natives.kernelUAPIVersion == Natives.managerUAPIVersion
+                    !Natives.isLateLoadMode && Natives.isManager &&
+                        Natives.kernelUAPIVersion == Natives.managerUAPIVersion
                 }.getOrDefault(false)
                 if (eligible) SystemBackends.kpm.verifyIntegration(SystemBackends.integrationVerifier) else null
             }
@@ -65,7 +75,7 @@ class KpmViewModel : ViewModel() {
                     refresh().join()
                 }
                 _uiState.update {
-                    if (!it.busy && SystemBackends.kpm.isCurrentVerification(checked)) {
+                    if (!Natives.isLateLoadMode && !it.busy && SystemBackends.kpm.isCurrentVerification(checked)) {
                         it.mergeIntegrationVerification(checked)
                     } else it
                 }
@@ -291,6 +301,11 @@ class KpmViewModel : ViewModel() {
         block: suspend () -> Unit,
     ) = viewModelScope.launch {
         operations.withLock {
+            if (Natives.isLateLoadMode) {
+                _uiState.value = jailbreakState()
+                _homeStartupState.update { it.completeSusfsQuery(false) }
+                return@withLock
+            }
             if (mutating) _uiState.update { it.copy(busy = true) }
             try {
                 val (unavailable, canPatchBoot, safeMode) = withContext(Dispatchers.IO) {

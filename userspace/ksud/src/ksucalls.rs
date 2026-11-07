@@ -187,6 +187,15 @@ pub fn is_late_load() -> bool {
     get_info().flags & ksu_uapi::KSU_GET_INFO_FLAG_LATE_LOAD != 0
 }
 
+pub const JAILBREAK_INTEGRATION_REASON: &str = "SuSFS and KPM are disabled in jailbreak mode";
+
+pub fn ensure_kernel_integrations_allowed() -> Result<()> {
+    if is_late_load() {
+        bail!("{JAILBREAK_INTEGRATION_REASON}");
+    }
+    Ok(())
+}
+
 pub fn is_lkm() -> bool {
     get_info().flags & ksu_uapi::KSU_GET_INFO_FLAG_LKM != 0
 }

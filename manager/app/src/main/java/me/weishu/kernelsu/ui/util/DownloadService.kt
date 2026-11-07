@@ -26,16 +26,17 @@ import kotlinx.coroutines.launch
 import me.weishu.kernelsu.R
 import me.weishu.kernelsu.data.registry.DownloadVerificationException
 import me.weishu.kernelsu.data.registry.ExpectedFile
+import me.weishu.kernelsu.data.registry.ModuleRangeDownloader
 import me.weishu.kernelsu.data.registry.RegistryDownloadStore
 import me.weishu.kernelsu.data.registry.RegistryUrls
 import me.weishu.kernelsu.data.repository.SettingsRepositoryImpl
 import me.weishu.kernelsu.ksuApp
 import me.weishu.kernelsu.ui.MainActivity
-import okhttp3.Call
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import java.io.File
 import java.io.IOException
+import java.io.InputStream
 import java.net.URLConnection
 import java.util.concurrent.ConcurrentHashMap
 
@@ -76,7 +77,7 @@ class DownloadService : Service() {
     }
 
     private val activeJobs = ConcurrentHashMap<Int, Job>()
-    private val activeCalls = ConcurrentHashMap<Int, Call>()
+    private val activeCalls = ConcurrentHashMap<Int, () -> Unit>()
     private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private lateinit var notificationManager: NotificationManager
 
@@ -122,7 +123,7 @@ class DownloadService : Service() {
                 val downloadId = intent.getIntExtra(EXTRA_DOWNLOAD_ID, -1)
                 if (downloadId != -1) {
                     activeJobs[downloadId]?.cancel()
-                    activeCalls[downloadId]?.cancel()
+                    activeCalls[downloadId]?.invoke()
                 }
             }
 
@@ -178,18 +179,16 @@ class DownloadService : Service() {
                     // Already stored under its final name: delete it if cancelled before completion.
                     downloadVerified(id, url, fileName, expected).also { pendingUri = it }
                 } else {
-                    val call = ksuApp.okhttpClient.newCall(Request.Builder().url(url).apply {
+                    val request = Request.Builder().url(url).apply {
                         cookie?.takeIf { it.isNotEmpty() }?.let { addHeader("Cookie", it) }
                         userAgent?.takeIf { it.isNotEmpty() }?.let { addHeader("User-Agent", it) }
-                    }.build())
-                    activeCalls[id] = call
-                    ensureActive()
-                    val published = call.execute()
-                        .use { resp ->
-                        if (!resp.isSuccessful) throw IOException("HTTP ${resp.code}")
-                        val body = resp.body
-                        val total = body.contentLength()
-
+                    }.build()
+                    val progress = ProgressReporter(id, fileName)
+                    val published = withDownloadStream(
+                        id, ksuApp.okhttpClient, request,
+                        parallel = completionAction == DownloadCompletionAction.INSTALL_MODULE,
+                        onProgress = progress::report,
+                    ) { source, total ->
                         ensureActive()
                         val values = ContentValues().apply {
                             put(MediaStore.Downloads.DISPLAY_NAME, fileName)
@@ -209,16 +208,13 @@ class DownloadService : Service() {
                         output.use { fos ->
                             val buf = ByteArray(8 * 1024)
                             var soFar = 0L
-                            val progress = ProgressReporter(id, displayName, total)
-                            val source = body.byteStream()
-
                             while (true) {
                                 ensureActive()
                                 val read = source.read(buf)
                                 if (read == -1) break
                                 fos.write(buf, 0, read)
                                 soFar += read
-                                progress.report(soFar)
+                                progress.report(soFar, total)
                             }
                             fos.flush()
                         }
@@ -271,24 +267,93 @@ class DownloadService : Service() {
                 DownloadManager.markFailed(id, "Cancelled")
                 notificationManager.cancel(id)
             }
-            activeCalls.remove(id)?.cancel()
+            activeCalls.remove(id)?.invoke()
             activeJobs.remove(id)
             stopForegroundIfIdle()
         }
         job.start()
     }
 
-    private inner class ProgressReporter(private val id: Int, private val displayName: String, private val total: Long) {
+    private inner class ProgressReporter(private val id: Int, private val displayName: String) {
+        private var lastProgress = -1
         private var lastNotifiedProgress = -1
 
-        fun report(soFar: Long) {
+        @Synchronized
+        fun report(soFar: Long, total: Long) {
             if (total <= 0) return
-            val percent = ((soFar * 100L) / total).toInt().coerceIn(0, 100)
+            val percent = (soFar.toDouble() * 100 / total).toInt().coerceIn(0, 100)
+            if (percent <= lastProgress) return
+            lastProgress = percent
             DownloadManager.updateProgress(id, percent)
             if (percent - lastNotifiedProgress >= 2 || percent == 100) {
                 notificationManager.notify(id, buildProgressNotification(id, displayName, percent))
                 lastNotifiedProgress = percent
             }
+        }
+    }
+
+    private fun <T> CoroutineScope.withDownloadStream(
+        id: Int,
+        client: OkHttpClient,
+        request: Request,
+        parallel: Boolean,
+        expectedSize: Long = -1L,
+        onProgress: (Long, Long) -> Unit,
+        consume: (InputStream, Long) -> T,
+    ): T {
+        if (parallel) {
+            val downloader = ModuleRangeDownloader { range, ifRange ->
+                val rangeRequest = request.newBuilder()
+                    .header("Range", range)
+                    .header("Accept-Encoding", "identity")
+                    .header("Cache-Control", "no-cache, no-store")
+                    .apply { ifRange?.let { header("If-Range", it) } }
+                    .build()
+                val call = client.newCall(rangeRequest)
+                object : ModuleRangeDownloader.RangeCall {
+                    override fun execute(): ModuleRangeDownloader.Reply {
+                        val response = call.execute()
+                        return ModuleRangeDownloader.Reply(
+                            response.code, response.body.contentLength(),
+                            response.header("Content-Range"), response.header("Content-Encoding"),
+                            response.header("ETag"), response.body.byteStream(), response,
+                        )
+                    }
+
+                    override fun cancel() = call.cancel()
+                }
+            }
+            val part = File.createTempFile("module-range-", ".part", cacheDir)
+            activeCalls[id] = downloader::cancel
+            try {
+                ensureActive()
+                val assembled = try {
+                    downloader.download(part, expectedSize) { bytes, total ->
+                        ensureActive()
+                        onProgress(bytes, total)
+                    }
+                } catch (e: DownloadVerificationException) {
+                    throw e
+                } catch (_: IOException) {
+                    // An unsupported or interrupted range attempt can be retried as one GET.
+                    ensureActive()
+                    false
+                }
+                if (assembled) {
+                    ensureActive()
+                    return part.inputStream().use { consume(it, part.length()) }
+                }
+            } finally {
+                activeCalls.remove(id)
+                part.delete()
+            }
+        }
+        val call = client.newCall(request)
+        activeCalls[id] = call::cancel
+        ensureActive()
+        return call.execute().use { response ->
+            if (!response.isSuccessful) throw IOException("HTTP ${response.code}")
+            consume(response.body.byteStream(), response.body.contentLength())
         }
     }
 
@@ -308,18 +373,19 @@ class DownloadService : Service() {
         }
         val root = registryStoreRoot()
         runCatching { RegistryDownloadStore.cleanup(root, REGISTRY_DOWNLOAD_MAX_AGE_MS) }
-        val call = registryClient().newCall(Request.Builder().url(url).build())
-        activeCalls[id] = call
-        ensureActive()
-        val file = call.execute().use { resp ->
-            if (!resp.isSuccessful) throw IOException("HTTP ${resp.code}")
-            val progress = ProgressReporter(id, fileName, expected.size)
+        val progress = ProgressReporter(id, fileName)
+        val file = withDownloadStream(
+            id, registryClient(), Request.Builder().url(url).build(),
+            parallel = true,
+            expectedSize = expected.size,
+            onProgress = progress::report,
+        ) { source, _ ->
             RegistryDownloadStore.download(
-                input = resp.body.byteStream(),
+                input = source,
                 root = root,
                 expected = expected,
                 fileName = fileName,
-                onProgress = progress::report,
+                onProgress = { progress.report(it, expected.size) },
                 checkActive = { ensureActive() },
             )
         }
@@ -459,7 +525,7 @@ class DownloadService : Service() {
 
     override fun onDestroy() {
         serviceScope.cancel()
-        activeCalls.values.forEach { it.cancel() }
+        activeCalls.values.forEach { it() }
         super.onDestroy()
     }
 }

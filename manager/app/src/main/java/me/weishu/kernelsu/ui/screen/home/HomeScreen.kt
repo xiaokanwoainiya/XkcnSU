@@ -51,7 +51,11 @@ fun HomePager(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val integrationState by integrationViewModel.uiState.collectAsStateWithLifecycle()
     val homeState = uiState.copy(
-        susfsInfo = uiState.susfsInfo.merge(SusfsHomeSnapshot.from(integrationState)),
+        susfsInfo = if (uiState.isLateLoadMode) {
+            SusfsHomeInfo()
+        } else {
+            uiState.susfsInfo.merge(SusfsHomeSnapshot.from(integrationState))
+        },
     )
     val uriHandler = LocalUriHandler.current
     val context = LocalContext.current

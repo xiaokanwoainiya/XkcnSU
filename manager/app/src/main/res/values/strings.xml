@@ -103,6 +103,7 @@
     <string name="send_log">Send logs</string>
     <string name="safe_mode">Safe mode</string>
     <string name="jailbreak_mode">Jailbreak mode</string>
+    <string name="jailbreak_integrations_disabled">SuSFS and KPM are disabled in jailbreak mode.</string>
     <string name="home_jailbreak">Jailbreak</string>
     <string name="jailbreak_timeout">Jailbreak may have failed, please check logs</string>
     <string name="jailbreak_reboot_warning">You are in Jailbreak mode. Rebooting will lose root access, and you will have to jailbreak again after the device starts up. Reboot anyway?</string>

@@ -90,6 +90,7 @@
     <string name="send_log">发送日志</string>
     <string name="safe_mode">安全模式</string>
     <string name="jailbreak_mode">越狱模式</string>
+    <string name="jailbreak_integrations_disabled">越狱模式下已禁用 SuSFS 和 KPM。</string>
     <string name="home_jailbreak">越狱</string>
     <string name="jailbreak_timeout">越狱可能失败，请检查日志</string>
     <string name="jailbreak_reboot_warning">当前处于越狱模式，重启后将失去 Root 权限，开机后需要重新越狱。确定要重启吗？</string>

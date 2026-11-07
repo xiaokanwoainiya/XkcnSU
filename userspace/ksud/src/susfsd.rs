@@ -360,12 +360,18 @@ fn put_config(key: &str, value: &str) -> Result<()> {
 }
 
 pub fn autoload_enabled() -> Result<bool> {
+    if crate::ksucalls::is_late_load() {
+        return Ok(false);
+    }
     Ok(get_config(AUTOLOAD_KEY)?
         .as_deref()
         .is_some_and(crate::module_config::parse_bool_config))
 }
 
 pub fn set_autoload(enabled: bool, kmi: Option<&str>) -> Result<()> {
+    if enabled {
+        crate::ksucalls::ensure_kernel_integrations_allowed()?;
+    }
     let _operation = OperationLock::acquire()?;
     if !enabled {
         put_config(AUTOLOAD_KEY, "false")?;
@@ -416,6 +422,7 @@ fn apply_conflict_state(conflict: bool) -> Result<()> {
 }
 
 pub fn load(kmi: Option<&str>) -> Result<()> {
+    crate::ksucalls::ensure_kernel_integrations_allowed()?;
     let _operation = OperationLock::acquire()?;
     require_arm64()?;
     let before = Probe::read();
@@ -548,6 +555,7 @@ pub fn show_variant() -> Result<()> {
 }
 
 pub fn show_features(check_only: bool) -> Result<()> {
+    crate::ksucalls::ensure_kernel_integrations_allowed()?;
     let probe = Probe::read();
     ensure!(
         probe.supported(),
@@ -568,6 +576,15 @@ pub fn show_features(check_only: bool) -> Result<()> {
 /// Configuration errors propagate so callers can retain the previous UI state.
 pub fn status_json() -> Result<Value> {
     let probe = Probe::read();
+    if crate::ksucalls::is_late_load() {
+        return Ok(json!({
+            "supported": false,
+            "loaded": probe.module_present,
+            "builtin": probe.provider == Provider::Builtin,
+            "autoload": false,
+            "reason": crate::ksucalls::JAILBREAK_INTEGRATION_REASON,
+        }));
+    }
     let autoload = autoload_enabled().context("Cannot read SUSFS auto-load config")?;
     let detected = crate::boot_patch::get_current_kmi().ok();
     let kmi = match detected {

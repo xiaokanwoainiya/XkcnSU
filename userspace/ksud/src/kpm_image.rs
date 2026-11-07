@@ -387,6 +387,10 @@ fn publish_original(path: &Path, original: &[u8]) -> Result<()> {
 }
 
 pub fn run_image_command(command: ImageCommand) -> Result<()> {
+    #[cfg(target_os = "android")]
+    if !matches!(&command, ImageCommand::Inspect { .. }) {
+        crate::ksucalls::ensure_kernel_integrations_allowed()?;
+    }
     let data = match command {
         ImageCommand::Inspect { boot } => inspection(&fs::read(boot)?)?,
         ImageCommand::ExportKernel { boot, out } => {
@@ -985,6 +989,7 @@ fn recover_running_integration() -> Result<IntegrationState> {
 #[cfg(target_os = "android")]
 pub fn set_enabled(enabled: bool) -> Result<Value> {
     use std::fs::OpenOptions;
+    crate::ksucalls::ensure_kernel_integrations_allowed()?;
     ensure!(
         rustix::process::getuid().is_root(),
         "KPM integration requires root"

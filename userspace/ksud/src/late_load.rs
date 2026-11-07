@@ -117,14 +117,6 @@ pub fn run(package_name: &String, kmi: Option<String>, allow_shell: bool) -> Res
     }
 
     // 8. Execute late-load stage scripts with a shared boot deadline
-    if !utils::is_safe_mode() {
-        if let Err(error) = crate::susfsd::load_if_autoload_enabled() {
-            warn!("SUSFS late-load failed; root remains available: {error:#}");
-        }
-        if let Err(error) = crate::kpm::load_autoload() {
-            warn!("KPM late-load failed; registrations retained: {error:#}");
-        }
-    }
     let wait = ScriptWait::Until(Instant::now() + defs::BOOT_STAGE_TIMEOUT);
     init_event::run_stage("late-load", wait);
 
