@@ -310,7 +310,7 @@ class KpmViewModel : ViewModel() {
             try {
                 val (unavailable, canPatchBoot, safeMode) = withContext(Dispatchers.IO) {
                     val reason = when {
-                        !runCatching { Natives.isManager }.getOrDefault(false) -> "XKCNSU manager authentication is unavailable"
+                        !runCatching { Natives.isManager }.getOrDefault(false) -> "XkcnSU manager authentication is unavailable"
                         !runCatching { Natives.kernelUAPIVersion == Natives.managerUAPIVersion }.getOrDefault(false) ->
                             "Matching kernel UAPI is required"
                         !runCatching { getRootShell(true).isRoot }.getOrDefault(false) -> "Root access is required"

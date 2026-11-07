@@ -1,4 +1,4 @@
-name: Build XKCNSU
+name: Build XkcnSU
 
 on:
   workflow_dispatch:
@@ -10,6 +10,13 @@ on:
         options:
           - android14-6.1
           - all
+      signing_profile:
+        description: Signing profile
+        type: choice
+        default: release
+        options:
+          - release
+          - development
 
 permissions:
   contents: read
@@ -27,8 +34,8 @@ jobs:
       XKCNSU_JOBS: 2
       XKCNSU_ABIS: 'arm64-v8a x86_64'
       XKCNSU_DDK_RELEASE: '20260828'
-      XKCNSU_SIGNING_PROFILE: release
-      XKCNSU_REQUIRE_RELEASE_SIGNING: '1'
+      XKCNSU_SIGNING_PROFILE: ${{ inputs.signing_profile }}
+      XKCNSU_REQUIRE_RELEASE_SIGNING: ${{ inputs.signing_profile == 'release' && '1' || '0' }}
     steps:
       - uses: actions/checkout@v7
         with:
@@ -48,6 +55,7 @@ jobs:
           sudo env XKCNSU_ROOT="$GITHUB_WORKSPACE" XKCNSU_CACHE="$XKCNSU_CACHE" bash tools/bootstrap-kpatch-toolchain.sh
 
       - name: Restore dedicated XKCNSU release signing key
+        if: inputs.signing_profile == 'release'
         env:
           XKCNSU_RELEASE_KEYSTORE_B64: ${{ secrets.XKCNSU_RELEASE_KEYSTORE_B64 }}
           XKCNSU_RELEASE_KEYSTORE_PASSWORD: ${{ secrets.XKCNSU_RELEASE_KEYSTORE_PASSWORD }}
@@ -70,6 +78,10 @@ jobs:
           store.chmod(0o600)
           password_file.chmod(0o600)
           PY
+
+      - name: Prepare APK and kernel signing identity
+        shell: bash
+        run: |
           sudo --preserve-env=XKCNSU_SIGNING_PROFILE,XKCNSU_REQUIRE_RELEASE_SIGNING env XKCNSU_ROOT="$GITHUB_WORKSPACE" XKCNSU_CACHE="$XKCNSU_CACHE" bash tools/build-signing.sh
 
       - name: Validate Rust and build priority ARM64 modules
