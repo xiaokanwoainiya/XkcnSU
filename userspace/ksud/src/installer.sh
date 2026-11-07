@@ -7,7 +7,7 @@
 
 umask 022
 
-# customize.sh may set MODULE_HOT_INSTALL_REQUEST=true to skip the reboot
+# customize.sh can request a legacy hot-install script for an eligible module
 export KSU_HAS_HOT_INSTALL=true
 
 ui_print() {
@@ -410,7 +410,7 @@ install_module() {
     set_permissions
   else
     print_title "$MODNAME" "by $MODAUTH"
-    print_title "Powered by KernelSU"
+    print_title "XKCNSU"
 
     unzip -o "$ZIPFILE" customize.sh -d $MODPATH >&2
 
@@ -448,12 +448,10 @@ install_module() {
   handle_partition odm
 
   if $BOOTMODE; then
-    mktouch $NVBASE/modules/$MODID/update
     rm -rf $NVBASE/modules/$MODID/remove 2>/dev/null
     rm -rf $NVBASE/modules/$MODID/disable 2>/dev/null
-    cp -af $MODPATH/module.prop $NVBASE/modules/$MODID/module.prop
 
-    # Tell ksud to apply the module right away
+    # ksud decides whether to activate the staged module or mark it for reboot
     if [ "$MODULE_HOT_INSTALL_REQUEST" = "true" ]; then
       echo "$MODULE_HOT_RUN_SCRIPT" > $MODPATH/.ksu_hot_install
     else

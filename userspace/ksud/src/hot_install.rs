@@ -1,10 +1,7 @@
-//! Hot install: make a freshly installed module live without a reboot.
-//!
-//! A module opts in from customize.sh with `MODULE_HOT_INSTALL_REQUEST=true` (and optionally
-//! `MODULE_HOT_RUN_SCRIPT=<script>`). installer.sh records the request in a marker file inside
-//! the staged module dir; after the install script succeeds ksud moves the staged dir over the
-//! live one, applies sepolicy.rule and runs the requested script. Anything that only happens at
-//! boot (mounting system/, system.prop, post-fs-data.sh, ...) still waits for the next boot.
+//! Activate eligible modules after the installer has finished customizing the staged files.
+//! Modules with system.prop or post-fs-data.sh are staged for the next boot. The default
+//! live script is service.sh. An explicit legacy hot-install script is used if service.sh
+//! is absent.
 
 use crate::{
     assets, defs,
@@ -18,6 +15,7 @@ use log::{info, warn};
 
 use std::{
     fs::{canonicalize, remove_dir_all, remove_file, rename},
+    io::ErrorKind,
     os::unix::process::CommandExt,
     path::{Component, Path, PathBuf},
     process::{Command, Stdio},
@@ -41,8 +39,7 @@ pub fn take_request(staged_dir: &Path) -> Option<Request> {
     })
 }
 
-/// Resolve the run script to a path relative to the module dir. A missing script is skipped,
-/// like the metamodule implementations do.
+/// Resolve a script relative to the staged module directory.
 fn check_run_script(staged_dir: &Path, script: &str) -> Result<Option<PathBuf>> {
     let mut components = Path::new(script).components().peekable();
     while components.next_if_eq(&Component::CurDir).is_some() {}
@@ -52,33 +49,54 @@ fn check_run_script(staged_dir: &Path, script: &str) -> Result<Option<PathBuf>> 
             .components()
             .all(|c| matches!(c, Component::Normal(_)))
     {
-        bail!("invalid MODULE_HOT_RUN_SCRIPT '{script}'");
+        bail!("invalid hot-install script '{script}'");
     }
 
     let path = staged_dir.join(&relative);
-    if path.symlink_metadata().is_err() {
-        println!("! MODULE_HOT_RUN_SCRIPT '{script}' not found, skipping it");
-        return Ok(None);
+    match path.symlink_metadata() {
+        Ok(_) => {}
+        Err(e) if e.kind() == ErrorKind::NotFound => return Ok(None),
+        Err(e) => return Err(e).with_context(|| format!("Failed to inspect {}", path.display())),
     }
     // Symlinks may only point to files inside the module
     let resolved = canonicalize(&path)?;
     if !resolved.is_file() || !resolved.starts_with(canonicalize(staged_dir)?) {
-        bail!("MODULE_HOT_RUN_SCRIPT '{script}' is not a file inside the module");
+        bail!("hot-install script '{script}' is not a file inside the module");
     }
     Ok(Some(relative))
 }
 
-fn check(module_id: &str, is_metamodule: bool, request: &Request) -> Result<Option<PathBuf>> {
+fn check(
+    module_id: &str,
+    is_metamodule: bool,
+    request: Option<&Request>,
+) -> Result<Option<PathBuf>> {
     if is_metamodule {
         bail!("metamodules are always applied at boot");
     }
     if is_safe_mode() {
         bail!("modules are disabled in safe mode");
     }
-    let Some(script) = &request.run_script else {
-        return Ok(None);
-    };
-    check_run_script(&Path::new(defs::MODULE_UPDATE_DIR).join(module_id), script)
+    let staged_dir = Path::new(defs::MODULE_UPDATE_DIR).join(module_id);
+    for boot_file in ["system.prop", "post-fs-data.sh"] {
+        let path = staged_dir.join(boot_file);
+        match path.symlink_metadata() {
+            Ok(_) => bail!("{boot_file} requires a reboot"),
+            Err(e) if e.kind() == ErrorKind::NotFound => {}
+            Err(e) => {
+                return Err(e).with_context(|| format!("Failed to inspect {}", path.display()));
+            }
+        }
+    }
+
+    let service = check_run_script(&staged_dir, "service.sh")?;
+    if service.is_some() {
+        return Ok(service);
+    }
+    match request.and_then(|request| request.run_script.as_deref()) {
+        Some(script) => check_run_script(&staged_dir, script),
+        None => Ok(None),
+    }
 }
 
 /// Move the live module dir out of the way. Running processes and existing mounts may still
@@ -96,6 +114,7 @@ fn stash(live_dir: &Path, module_id: &str) -> Result<PathBuf> {
 }
 
 fn swap(module_id: &str) -> Result<()> {
+    ensure_dir_exists(defs::MODULE_DIR)?;
     let staged_dir = Path::new(defs::MODULE_UPDATE_DIR).join(module_id);
     let live_dir = Path::new(defs::MODULE_DIR).join(module_id);
 
@@ -119,16 +138,13 @@ fn swap(module_id: &str) -> Result<()> {
 
 /// Try to apply the staged module right away. Returns false if the caller should fall back to
 /// the regular update-on-reboot path.
-pub fn apply(module_id: &str, is_metamodule: bool, request: &Request) -> bool {
-    println!("- Hot install requested");
-
+pub fn apply(module_id: &str, is_metamodule: bool, request: Option<&Request>) -> bool {
     let run_script = match check(module_id, is_metamodule, request)
         .and_then(|script| swap(module_id).map(|()| script))
     {
         Ok(script) => script,
         Err(e) => {
-            println!("- Hot install skipped: {e:#}");
-            println!("- Reboot to apply the module");
+            println!("- Hot install deferred: {e:#}");
             return false;
         }
     };
@@ -162,7 +178,7 @@ pub fn apply(module_id: &str, is_metamodule: bool, request: &Request) -> bool {
         }
         println!("- Running {}", script.display());
         let deadline = Instant::now() + defs::HOT_INSTALL_SCRIPT_TIMEOUT;
-        let result = exec_script_with(
+        if let Err(e) = exec_script_with(
             live_dir.join(script),
             ScriptWait::Until(deadline),
             |command| {
@@ -176,9 +192,8 @@ pub fn apply(module_id: &str, is_metamodule: bool, request: &Request) -> bool {
                     });
                 }
             },
-        );
-        if let Err(e) = result {
-            println!("! {e:#}");
+        ) {
+            println!("! Hot-install script failed: {e:#}");
         }
     }
 

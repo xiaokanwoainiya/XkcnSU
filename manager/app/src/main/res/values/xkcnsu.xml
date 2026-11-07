@@ -2,7 +2,7 @@
 <resources>
     <string name="xkcnsu_system">System</string>
     <string name="xkcnsu_system_summary">KPM integration and SUSFS</string>
-    <string name="xkcnsu_about_source">XKCNSU. Based on MilkSU (MikSU), KernelSU, KernelSU-Next and KPatch-Next. Source: %1$s. Upstream community: %2$s</string>
+    <string name="xkcnsu_about_source">XKCNSU. Upstream source: %1$s. With thanks to KernelSU, KernelSU-Next and KPatch-Next. Upstream community: %2$s</string>
     <string name="settings_manager_hide">Hide manager</string>
     <string name="settings_manager_hide_summary">Hide the manager app. Turn off to restore the original app.</string>
     <string name="settings_manager_hide_unsupported">Update the kernel to support manager hiding</string>
@@ -59,6 +59,6 @@
     <string name="home_susfs_version">SuSFS version</string>
     <string name="home_susfs_supported">Supported</string>
     <string name="home_support_development_title">Upstream source</string>
-    <string name="home_support_development_summary">Based on MilkSU (MikSU), with thanks to KernelSU, KernelSU-Next and KPatch-Next.</string>
+    <string name="home_support_development_summary">Source and credits for the upstream projects.</string>
     <string name="home_support_project_url" translatable="false">https://github.com/Xiaogugtfgdfhgrh/MikSU</string>
 </resources>

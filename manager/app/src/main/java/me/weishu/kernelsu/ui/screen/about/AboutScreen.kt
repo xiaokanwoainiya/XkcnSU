@@ -16,7 +16,7 @@ fun AboutScreen() {
     val uriHandler = LocalUriHandler.current
     val htmlString = stringResource(
         id = R.string.xkcnsu_about_source,
-        "<b><a href=\"https://github.com/Xiaogugtfgdfhgrh/MikSU\">MilkSU / MikSU (upstream)</a></b>",
+        "<b><a href=\"https://github.com/Xiaogugtfgdfhgrh/MikSU\">Upstream project</a></b>",
         "<b><a href=\"https://t.me/KernelSU\">Telegram</a></b>"
     )
     val state = AboutUiState(

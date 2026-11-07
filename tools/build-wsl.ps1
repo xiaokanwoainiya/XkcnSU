@@ -11,37 +11,37 @@ param(
 )
 
 $ErrorActionPreference = 'Stop'
-$MilkRoot = Split-Path -Parent $PSScriptRoot
-$MilkWslRoot = (& wsl.exe -d Ubuntu -u root --exec wslpath -u $MilkRoot).Trim()
-if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($MilkWslRoot)) {
+$XkcnsuRoot = Split-Path -Parent $PSScriptRoot
+$XkcnsuWslRoot = (& wsl.exe -d Ubuntu -u root --exec wslpath -u $XkcnsuRoot).Trim()
+if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($XkcnsuWslRoot)) {
     throw 'Cannot map XKCNSU to the Ubuntu WSL filesystem.'
 }
-$MilkScript = ''
-$MilkArguments = @()
+$XkcnsuScript = ''
+$XkcnsuArguments = @()
 switch ($Stage) {
-    'doctor' { $MilkScript = 'bootstrap-xkcnsu.sh'; $MilkArguments = @('doctor') }
-    'bootstrap' { $MilkScript = 'bootstrap-xkcnsu.sh'; $MilkArguments = @('all') }
-    'lkm' { $MilkScript = 'build-lkm.sh'; $MilkArguments = @($Kmi, $Mode) }
-    'kpatch' { $MilkScript = 'build-kpatch.sh' }
+    'doctor' { $XkcnsuScript = 'bootstrap-xkcnsu.sh'; $XkcnsuArguments = @('doctor') }
+    'bootstrap' { $XkcnsuScript = 'bootstrap-xkcnsu.sh'; $XkcnsuArguments = @('all') }
+    'lkm' { $XkcnsuScript = 'build-lkm.sh'; $XkcnsuArguments = @($Kmi, $Mode) }
+    'kpatch' { $XkcnsuScript = 'build-kpatch.sh' }
     'all' {
         if (-not $SourceReady) { throw 'Full final builds require -SourceReady after source workers finish.' }
-        $MilkScript = 'build-all.sh'; $MilkArguments = @('--source-ready')
+        $XkcnsuScript = 'build-all.sh'; $XkcnsuArguments = @('--source-ready')
     }
-    'tests' { $MilkScript = 'build-rust.sh'; $MilkArguments = @('host-tests') }
-    'check' { $MilkScript = 'build-rust.sh'; $MilkArguments = @('android-check') }
-    'clippy' { $MilkScript = 'build-rust.sh'; $MilkArguments = @('android-clippy') }
-    'format' { $MilkScript = 'build-rust.sh'; $MilkArguments = @('format-check') }
+    'tests' { $XkcnsuScript = 'build-rust.sh'; $XkcnsuArguments = @('host-tests') }
+    'check' { $XkcnsuScript = 'build-rust.sh'; $XkcnsuArguments = @('android-check') }
+    'clippy' { $XkcnsuScript = 'build-rust.sh'; $XkcnsuArguments = @('android-clippy') }
+    'format' { $XkcnsuScript = 'build-rust.sh'; $XkcnsuArguments = @('format-check') }
     'snapshot' {
-        $MilkScript = 'build-release.sh'
-        $MilkArguments = @('snapshot', $(if ($SourceReady) { '--source-ready' } else { '--preview' }))
+        $XkcnsuScript = 'build-release.sh'
+        $XkcnsuArguments = @('snapshot', $(if ($SourceReady) { '--source-ready' } else { '--preview' }))
     }
     'matrix' {
-        & wsl.exe -d Ubuntu -u root --exec env "XKCNSU_ROOT=$MilkWslRoot" `
-            python3 "$MilkWslRoot/tools/build-matrix.py" --jobs $MatrixJobs --stage-assets
+        & wsl.exe -d Ubuntu -u root --exec env "XKCNSU_ROOT=$XkcnsuWslRoot" `
+            python3 "$XkcnsuWslRoot/tools/build-matrix.py" --jobs $MatrixJobs --stage-assets
         exit $LASTEXITCODE
     }
-    default { $MilkScript = 'build-release.sh'; $MilkArguments = @($Stage) }
+    default { $XkcnsuScript = 'build-release.sh'; $XkcnsuArguments = @($Stage) }
 }
-& wsl.exe -d Ubuntu -u root --exec env "XKCNSU_ROOT=$MilkWslRoot" `
-    bash "$MilkWslRoot/tools/$MilkScript" @MilkArguments
+& wsl.exe -d Ubuntu -u root --exec env "XKCNSU_ROOT=$XkcnsuWslRoot" `
+    bash "$XkcnsuWslRoot/tools/$XkcnsuScript" @XkcnsuArguments
 exit $LASTEXITCODE

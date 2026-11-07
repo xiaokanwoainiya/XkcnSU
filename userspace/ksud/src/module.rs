@@ -31,7 +31,10 @@ use zip_extensions::inflate::zip_extract::zip_extract_file_to_memory;
 
 use crate::defs::{MODULE_DIR, MODULE_UPDATE_DIR, UPDATE_FILE_NAME};
 use crate::module::ModuleType::{Active, All};
-use std::os::unix::{prelude::PermissionsExt, process::CommandExt};
+use std::os::{
+    fd::AsRawFd,
+    unix::{fs::OpenOptionsExt, prelude::PermissionsExt, process::CommandExt},
+};
 
 // Checkouts on Windows can contain CRLF even though Android's shell requires LF.
 const INSTALLER_CONTENT: &str =
@@ -793,28 +796,48 @@ fn install_module_to_system(zip: &str) -> Result<String> {
     ensure_clean_dir(&updated_dir)?;
     info!("target dir: {}", updated_dir.display());
 
-    // Extract zip to target directory
-    println!("- Extracting module files");
-    let file = File::open(zip)?;
-    let mut archive = zip::ZipArchive::new(file)?;
-    archive.extract(&updated_dir)?;
-    // Only installer.sh may request a hot install, not a file shipped in the zip
-    std::fs::remove_file(updated_dir.join(defs::HOT_INSTALL_MARKER)).ok();
+    let staged = (|| -> Result<()> {
+        println!("- Extracting module files");
+        let file = File::open(zip)?;
+        let mut archive = zip::ZipArchive::new(file)?;
+        archive.extract(&updated_dir)?;
+        // Only the installer may request an alternate hot-install script.
+        std::fs::remove_file(updated_dir.join(defs::HOT_INSTALL_MARKER)).ok();
 
-    // Set permission and selinux context for $MOD/system
-    let module_system_dir = updated_dir.join("system");
-    if module_system_dir.exists() {
-        set_permissions(&module_system_dir, Permissions::from_mode(0o755))?;
-        restore_syscon(&module_system_dir)?;
+        let module_system_dir = updated_dir.join("system");
+        if module_system_dir.exists() {
+            set_permissions(&module_system_dir, Permissions::from_mode(0o755))?;
+            restore_syscon(&module_system_dir)?;
+        }
+
+        println!("- Running module installer");
+        exec_install_script(zip, is_metamodule, module_id)?;
+        ensure!(
+            updated_dir.join("module.prop").is_file(),
+            "Installer did not stage module.prop"
+        );
+        Ok(())
+    })();
+    if let Err(error) = staged {
+        if let Err(e) = remove_dir_all(&updated_dir)
+            && e.kind() != std::io::ErrorKind::NotFound
+        {
+            warn!(
+                "Failed to clear incomplete module {}: {e}",
+                updated_dir.display()
+            );
+        }
+        return Err(error);
     }
 
-    // Execute install script
-    println!("- Running module installer");
-    exec_install_script(zip, is_metamodule, module_id)?;
-
-    if let Some(request) = hot_install::take_request(&updated_dir)
-        && hot_install::apply(module_id, is_metamodule, &request)
+    let request = hot_install::take_request(&updated_dir);
+    let staged_update = updated_dir.join(UPDATE_FILE_NAME);
+    if let Err(e) = std::fs::remove_file(&staged_update)
+        && e.kind() != std::io::ErrorKind::NotFound
     {
+        return Err(e).with_context(|| format!("Failed to clear {}", staged_update.display()));
+    }
+    if hot_install::apply(module_id, is_metamodule, request.as_ref()) {
         println!("- Module installed successfully, no reboot required!");
         info!("Module {module_id} installed successfully!");
         return Ok(module_id.to_owned());
@@ -836,7 +859,7 @@ fn install_module_to_system(zip: &str) -> Result<String> {
         metamodule::ensure_symlink(&module_dir)?;
     }
 
-    println!("- Module installed successfully!");
+    println!("- Module staged successfully. Reboot to apply it.");
     info!("Module {module_id} installed successfully!");
 
     Ok(module_id.to_owned())
@@ -844,6 +867,19 @@ fn install_module_to_system(zip: &str) -> Result<String> {
 
 pub fn install_module(zip: &str) -> Result<()> {
     ksucalls::ensure_uapi_version_matched()?;
+
+    // The embedded installer uses a shared temporary directory.
+    ensure_dir_exists(defs::WORKING_DIR)?;
+    let install_lock = File::options()
+        .write(true)
+        .create(true)
+        .truncate(false)
+        .mode(0o600)
+        .custom_flags(libc::O_NOFOLLOW)
+        .open(Path::new(defs::WORKING_DIR).join(".xkcnsu-module-install.lock"))?;
+    if unsafe { libc::flock(install_lock.as_raw_fd(), libc::LOCK_EX | libc::LOCK_NB) } != 0 {
+        return Err(std::io::Error::last_os_error()).context("Cannot lock module installation");
+    }
 
     let module_id = install_module_to_system(zip).inspect_err(|e| println!("- Error: {e}"))?;
     if let Err(e) = regenerate_preinit() {
