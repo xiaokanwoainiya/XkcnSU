@@ -91,7 +91,16 @@ class BuildVerifyTests(TemporaryAssets):
         self.write_apk(self.daemon)
         self.final_manifest = self.out / "manifests/final-apk.json"
         self.module_result = subprocess.CompletedProcess([], 0)
-        self.signing = "Signer #1 certificate SHA-256 digest: " + self.certificate_hash
+        self.signing = (
+            "Verifies\n"
+            "Verified using v1 scheme (JAR signing): false\n"
+            "Verified using v2 scheme (APK Signature Scheme v2): true\n"
+            "Verified using v3 scheme (APK Signature Scheme v3): false\n"
+            "Verified using v3.1 scheme (APK Signature Scheme v3.1): false\n"
+            "Verified using v4 scheme (APK Signature Scheme v4): false\n"
+            "Number of signers: 1\n"
+            f"Signer #1 certificate SHA-256 digest: {self.certificate_hash}\n"
+        )
         self.badging = (
             "package: name='io.xkcnsu.manager' versionCode='32800' "
             "versionName='0.2.0'\n"
@@ -171,7 +180,7 @@ class BuildVerifyTests(TemporaryAssets):
     def android_tool(self, arguments, **kwargs):
         self.assertEqual(kwargs, {"text": True})
         responses = {
-            ("apksigner", "verify", "--print-certs", str(self.apk)): self.signing,
+            ("apksigner", "verify", "--verbose", "--print-certs", str(self.apk)): self.signing,
             ("aapt2", "dump", "badging", str(self.apk)): self.badging,
             ("aapt2", "dump", "xmltree", "--file",
              "AndroidManifest.xml", str(self.apk)): self.manifest_xml,
@@ -328,11 +337,34 @@ class BuildVerifyTests(TemporaryAssets):
         self.assertFalse(self.final_manifest.exists())
 
     def test_valid_native_inputs_do_not_bypass_apk_signer(self):
-        self.signing = "Signer #1 certificate SHA-256 digest: " + "cd" * 32
+        self.signing = self.signing.replace(self.certificate_hash, "cd" * 32)
         with self.assertRaisesRegex(SystemExit, "signing certificate does not match"):
             self.verify()
         self.assertEqual(self.android_output.call_count, 1)
         self.assertFalse(self.final_manifest.exists())
+
+    def test_rejects_non_v2_only_apk_even_with_matching_certificate(self):
+        signing = self.signing
+        for v2_enabled in ("false", "true"):
+            with self.subTest(v2_enabled=v2_enabled):
+                self.signing = signing.replace("v2): true", f"v2): {v2_enabled}")
+                self.signing = self.signing.replace("v3): false", "v3): true")
+                with self.assertRaisesRegex(SystemExit, "must use APK Signature Scheme v2 only"):
+                    self.verify()
+                self.assertFalse(self.final_manifest.exists())
+
+    def test_rejects_multiple_signers_even_when_the_first_matches(self):
+        self.signing = self.signing.replace("Number of signers: 1", "Number of signers: 2")
+        self.signing += "Signer #2 certificate SHA-256 digest: " + "ef" * 32 + "\n"
+        with self.assertRaisesRegex(SystemExit, "must have exactly one signing certificate"):
+            self.verify()
+        self.assertFalse(self.final_manifest.exists())
+
+    def test_accepts_build_tools_37_v2_signer_label(self):
+        self.signing = self.signing.replace("Signer #1 certificate", "V2 Signer: certificate")
+        self.verify()
+        self.assertEqual(self.read_json("out/manifests/final-apk.json")["certificate_sha256"],
+                         self.certificate_hash)
 
     def test_valid_native_inputs_do_not_bypass_release_version(self):
         self.badging = self.badging.replace("32800", "32716")

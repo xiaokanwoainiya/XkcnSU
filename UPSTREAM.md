@@ -40,3 +40,14 @@ The initial identity transaction does not replace those license terms.
 - Kernel and Manager builds verify the package and the actual keystore
   certificate against the shared public certificate metadata before building.
 - A new vector X mark replaces the upstream product artwork.
+
+## GhostLock integration
+
+The temporary-root engine and profile tools are derived from
+[YuKongA/ghostlock-app](https://github.com/YuKongA/ghostlock-app).
+The upstream Apache-2.0 license is provided in [tools/ghostlock/LICENSE](tools/ghostlock/LICENSE).
+
+The iQOO Neo9 profile and `vrpatch.ko` come from
+[linux-tools/Ghostlock-app-for-IQOO_Neo9](https://github.com/linux-tools/Ghostlock-app-for-IQOO_Neo9).
+The bundled `vrpatch.ko` matches the public artifact in the
+[vrpatch source and build directory](https://github.com/linux-tools/VIVO-IQOO-Neo9-Root-Tools/tree/dacc955b0c72e377dc74d8d91aa9459366f24725/ksu-root/test-modules/vrpatch-kmi).

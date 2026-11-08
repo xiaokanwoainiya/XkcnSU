@@ -20,6 +20,10 @@ def main():
     }
     private_suffixes = {".apk", ".ko", ".img", ".p12", ".pfx", ".jks",
                         ".keystore", ".pem", ".key", ".pcap", ".pcapng", ".hprof"}
+    public_modules = {
+        "manager/app/src/main/assets/ghostlock/vrpatch.ko":
+            "9264a0abe2ab1189c6f86c730a53fec52f6058ceb14befc9625052997963f577",
+    }
     secret = re.compile(
         rb"-----BEGIN (?:[A-Z0-9]+ )*PRIVATE KEY-----|"
         rb"gh[pousr]_[A-Za-z0-9_]{30,}|"
@@ -34,7 +38,7 @@ def main():
         if not path.is_file() and not path.is_symlink():
             continue
         if (set(part.lower() for part in relative.parts) & private_parts or
-                relative.suffix.lower() in private_suffixes or
+                (relative.suffix.lower() in private_suffixes and name not in public_modules) or
                 relative.name.lower() in {"temp.gz", "local.properties", "keystore-password"} or
                 relative.name.lower().startswith(".env")):
             issues.append({"path": name, "reason": "local-or-private-artifact"})
@@ -44,11 +48,14 @@ def main():
                 issues.append({"path": name, "reason": "unexpected-symlink"})
             continue
         data = path.read_bytes()
+        digest = hashlib.sha256(data).hexdigest()
+        if name in public_modules and digest != public_modules[name]:
+            issues.append({"path": name, "reason": "public-module-digest-mismatch"})
         if secret.search(data):
             issues.append({"path": name, "reason": "private-key-or-access-token"})
         if local.search(data):
             issues.append({"path": name, "reason": "local-user-path"})
-        files.append({"path": name, "sha256": hashlib.sha256(data).hexdigest()})
+        files.append({"path": name, "sha256": digest})
     report = {"ok": not issues, "files": files, "issues": issues}
     output = root / "out/manifests/public-source-audit.json"
     output.parent.mkdir(parents=True, exist_ok=True)
