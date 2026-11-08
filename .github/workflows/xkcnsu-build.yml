@@ -111,11 +111,12 @@ jobs:
         env:
           XKCNSU_REQUIRE_FULL_MATRIX: ${{ inputs.kmi_scope == 'all' && '1' || '0' }}
         run: |
+          "$JAVA_HOME_21_X64/bin/javac" -version
           sudo --preserve-env=XKCNSU_SIGNING_PROFILE,XKCNSU_REQUIRE_RELEASE_SIGNING env XKCNSU_ROOT="$GITHUB_WORKSPACE" XKCNSU_CACHE="$XKCNSU_CACHE" bash tools/build-kpatch.sh
           sudo --preserve-env=XKCNSU_SIGNING_PROFILE,XKCNSU_REQUIRE_RELEASE_SIGNING env XKCNSU_ROOT="$GITHUB_WORKSPACE" XKCNSU_CACHE="$XKCNSU_CACHE" bash tools/build-host.sh
           sudo --preserve-env=XKCNSU_SIGNING_PROFILE,XKCNSU_REQUIRE_RELEASE_SIGNING env XKCNSU_ROOT="$GITHUB_WORKSPACE" XKCNSU_CACHE="$XKCNSU_CACHE" bash tools/build-release.sh snapshot --source-ready
           for stage in ksuinit ksud manager repack; do
-            sudo --preserve-env=XKCNSU_SIGNING_PROFILE,XKCNSU_REQUIRE_RELEASE_SIGNING env XKCNSU_ROOT="$GITHUB_WORKSPACE" XKCNSU_CACHE="$XKCNSU_CACHE" XKCNSU_ABIS="$XKCNSU_ABIS" XKCNSU_REQUIRE_FULL_MATRIX="$XKCNSU_REQUIRE_FULL_MATRIX" bash tools/build-release.sh "$stage"
+            sudo --preserve-env=XKCNSU_SIGNING_PROFILE,XKCNSU_REQUIRE_RELEASE_SIGNING env JAVA_HOME="$JAVA_HOME_21_X64" XKCNSU_ROOT="$GITHUB_WORKSPACE" XKCNSU_CACHE="$XKCNSU_CACHE" XKCNSU_ABIS="$XKCNSU_ABIS" XKCNSU_REQUIRE_FULL_MATRIX="$XKCNSU_REQUIRE_FULL_MATRIX" bash tools/build-release.sh "$stage"
           done
 
       - name: Upload XKCNSU build products
