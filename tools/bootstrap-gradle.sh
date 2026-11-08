@@ -6,7 +6,7 @@ source "$(dirname -- "${BASH_SOURCE[0]}")/build-common.sh"
 xkcnsu_freeze "$@"
 xkcnsu_log gradle
 xkcnsu_space
-read -r filename destination < <(python3 - "$XKCNSU_ROOT/manager/gradle/wrapper/gradle-wrapper.properties" "$GRADLE_USER_HOME" <<'PY'
+read -r filename checksum destination < <(python3 - "$XKCNSU_ROOT/manager/gradle/wrapper/gradle-wrapper.properties" "$GRADLE_USER_HOME" <<'PY'
 import hashlib, pathlib, sys
 properties = dict(line.strip().split("=", 1) for line in pathlib.Path(sys.argv[1]).read_text().splitlines() if "=" in line)
 url = properties["distributionUrl"].replace("\\:", ":")
@@ -17,9 +17,10 @@ while number:
     number, digit = divmod(number, 36)
     digest = "0123456789abcdefghijklmnopqrstuvwxyz"[digit] + digest
 destination = pathlib.Path(sys.argv[2]) / "wrapper/dists" / filename.removesuffix(".zip") / digest
-print(filename, destination)
+print(filename, properties["distributionSha256Sum"], destination)
 PY
 )
+[[ "$checksum" =~ ^[a-f0-9]{64}$ ]] || xkcnsu_die "Invalid Gradle wrapper checksum."
 mkdir -p "$XKCNSU_CACHE/downloads" "$destination" "$XKCNSU_OUT/toolchain"
 # Hashed artifacts are immutable; reuse their bytes without sharing mutable cache locks.
 if [[ "$GRADLE_USER_HOME" != "$XKCNSU_CACHE/gradle" && \
@@ -30,20 +31,49 @@ if [[ "$GRADLE_USER_HOME" != "$XKCNSU_CACHE/gradle" && \
         "$GRADLE_USER_HOME/caches/modules-2/"
 fi
 archive="$XKCNSU_CACHE/downloads/$filename"
-checksum_file="$XKCNSU_CACHE/downloads/$filename.sha256"
-xkcnsu_run curl --silent --show-error --fail --location --retry 3 \
-    "https://downloads.gradle.org/distributions/$filename.sha256" -o "$checksum_file"
-checksum="$(awk '{print $1}' "$checksum_file")"
-[[ "$checksum" =~ ^[a-f0-9]{64}$ ]] || xkcnsu_die "Invalid Gradle checksum."
-if ! printf '%s  %s\n' "$checksum" "$archive" | sha256sum --check --status 2>/dev/null; then
-    xkcnsu_run curl --silent --show-error --fail --location --retry 3 --continue-at - \
-        "https://downloads.gradle.org/distributions/$filename" -o "$archive"
+
+archive_matches() {
+    printf '%s  %s\n' "$checksum" "$1" | sha256sum --check --status 2>/dev/null
+}
+
+download_checked() {
+    xkcnsu_run curl --silent --show-error --fail --location --proto '=https' \
+        --proto-redir '=https' --connect-timeout 15 --max-time 120 --retry 1 \
+        "$@" -o "$partial" && archive_matches "$partial"
+}
+
+download_release() {
+    local version="${filename#gradle-}" asset_id
+    version="${version%-*.zip}"
+    asset_id="$(curl --silent --show-error --fail --connect-timeout 15 --max-time 30 \
+        "https://api.github.com/repos/gradle/gradle-distributions/releases/tags/v$version" |
+        python3 -c 'import json, sys
+for asset in json.load(sys.stdin)["assets"]:
+    if asset["name"] == sys.argv[1] and asset.get("digest") == "sha256:" + sys.argv[2]:
+        print(asset["id"])
+        break' "$filename" "$checksum")" || return 1
+    [[ "$asset_id" =~ ^[0-9]+$ ]] || return 1
+    download_checked -H 'Accept: application/octet-stream' \
+        "https://api.github.com/repos/gradle/gradle-distributions/releases/assets/$asset_id?download=$(date +%s)"
+}
+
+if ! archive_matches "$archive"; then
+    (
+        partial="$(mktemp "$archive.XXXXXX")"
+        trap 'rm -f -- "$partial"' EXIT
+        if ! download_release &&
+            ! download_checked "https://downloads.gradle.org/distributions/$filename" &&
+            ! download_checked "https://mirrors.cloud.tencent.com/gradle/$filename"; then
+            xkcnsu_die "Could not download a Gradle distribution matching the pinned checksum."
+        fi
+        mv -- "$partial" "$archive"
+    )
 fi
 printf '%s  %s\n' "$checksum" "$archive" | sha256sum --check
 if [[ ! -f "$destination/$filename.ok" ]]; then
     xkcnsu_run unzip -q -o "$archive" -d "$destination"
     touch "$destination/$filename.ok"
 fi
-cp "$checksum_file" "$XKCNSU_OUT/toolchain/$filename.sha256"
+printf '%s\n' "$checksum" > "$XKCNSU_OUT/toolchain/$filename.sha256"
 printf 'Pinned Gradle wrapper cached: %s\n' "$destination"
 xkcnsu_space
