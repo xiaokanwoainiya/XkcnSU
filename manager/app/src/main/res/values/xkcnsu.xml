@@ -2,7 +2,7 @@
 <resources>
     <string name="xkcnsu_system">System</string>
     <string name="xkcnsu_system_summary">KPM integration and SUSFS</string>
-    <string name="xkcnsu_about_source">XkcnSU. Upstream source: %1$s. With thanks to KernelSU, KernelSU-Next and KPatch-Next. Upstream community: %2$s</string>
+    <string name="xkcnsu_about_source">XKCNSU. Upstream source: %1$s. With thanks to KernelSU, KernelSU-Next and KPatch-Next. Upstream community: %2$s</string>
     <string name="settings_manager_hide">Hide manager</string>
     <string name="settings_manager_hide_summary">Hide the manager app. Turn off to restore the original app.</string>
     <string name="settings_manager_hide_unsupported">Update the kernel to support manager hiding</string>
@@ -50,7 +50,7 @@
     <string name="kpm_control">Control</string>
     <string name="kpm_unload">Unload</string>
     <string name="kpm_remove">Remove file</string>
-    <string name="kpm_root_required">Matching XkcnSU kernel support and root access are required.</string>
+    <string name="kpm_root_required">Matching XKCNSU kernel support and root access are required.</string>
     <string name="kpm_safe_mode">Safe mode: loading is disabled</string>
     <string name="susfs_builtin">SUSFS is provided by the kernel. There is no runtime LKM to unload.</string>
     <string name="susfs_kmi">KMI override (optional)</string>

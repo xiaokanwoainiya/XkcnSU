@@ -1,6 +1,6 @@
-# XkcnSU Manager
+# XKCNSU Manager
 
-XkcnSU Manager provides Root authorization, application profiles, module
+XKCNSU Manager provides Root authorization, application profiles, module
 management, KPM controls and SUSFS settings.
 
 Application ID: `io.xkcnsu.manager`.
@@ -61,9 +61,9 @@ staged file is removed after the daemon processes it.
 
 ## Updates
 
-Automatic updates are disabled by default. Configure `XKCNSU_UPDATE_URL` with
-`https://api.github.com/repos/xiaokanwoainiya/XkcnSU/releases/latest` when publishing stable builds.
-See the [upstream attribution](../UPSTREAM.md) and [license notice](../NOTICE.md).
+Automatic updates are disabled until an independent XKCNSU repository exists.
+Configure its stable GitHub Releases API with `XKCNSU_UPDATE_URL`.
+Upstream attribution is retained in `../UPSTREAM.md`.
 `XKCNSU_UPDATE_URL` can be set through a Gradle property or environment
 variable.
 

@@ -2,7 +2,7 @@
 <resources>
     <string name="xkcnsu_system">系统</string>
     <string name="xkcnsu_system_summary">KPM 集成与 SUSFS</string>
-    <string name="xkcnsu_about_source">XkcnSU。上游源码：%1$s。感谢 KernelSU、KernelSU-Next 与 KPatch-Next。上游社区：%2$s</string>
+    <string name="xkcnsu_about_source">XKCNSU。上游源码：%1$s。感谢 KernelSU、KernelSU-Next 与 KPatch-Next。上游社区：%2$s</string>
     <string name="settings_manager_hide">自身隐藏</string>
     <string name="settings_manager_hide_summary">隐藏管理器，关闭后恢复原始应用</string>
     <string name="settings_manager_hide_unsupported">需要更新内核以支持自身隐藏</string>
@@ -50,7 +50,7 @@
     <string name="kpm_control">控制</string>
     <string name="kpm_unload">卸载</string>
     <string name="kpm_remove">移除文件</string>
-    <string name="kpm_root_required">需要匹配的 XkcnSU 内核支持和 root 权限。</string>
+    <string name="kpm_root_required">需要匹配的 XKCNSU 内核支持和 root 权限。</string>
     <string name="kpm_safe_mode">安全模式：加载操作已停用</string>
     <string name="susfs_builtin">SUSFS 由内核提供，没有可卸载的运行时 LKM。</string>
     <string name="susfs_kmi">指定 KMI（可选）</string>

@@ -1,15 +1,17 @@
-# XkcnSU upstream attribution
+# XKCNSU upstream attribution
 
-XkcnSU is derived from **MilkSU**, published in the **MikSU** repository.
+XKCNSU is derived from **MilkSU**, published in the **MikSU** repository:
 
 - Repository: https://github.com/Xiaogugtfgdfhgrh/MikSU
 - Baseline tag: `v0.2.3`
 - Baseline commit: `99bfbe84e197a44e10fde247d6cd0714d895c5f7`
 - Original application ID: `io.milksu.manager`
-- Derivative Manager: `XkcnSU`, application ID `io.xkcnsu.manager`
+- New product: `XKCNSU`, application ID `io.xkcnsu.manager`
 
-XkcnSU is maintained independently. Root, module management, KPM, SUSFS and
-other inherited implementations remain credited to their upstream authors.
+This is an independently maintained derivative. It is not an official MilkSU,
+KernelSU, KernelSU-Next or KPatch-Next release. Root, module management, KPM,
+SUSFS and other inherited implementations remain credited to their upstream
+authors; changing product identifiers does not make that work original to XKCNSU.
 
 ## Inherited upstream sources
 
@@ -22,22 +24,19 @@ other inherited implementations remain credited to their upstream authors.
 
 The original licenses, SPDX notices, copyright statements, pinned source
 commits and source hashes are retained. Current-tree destination hashes in the
-provenance records describe the XkcnSU source tree.
+provenance records describe XKCNSU's renamed tree.
 
 Manager and userspace code retain GPL-3.0-or-later. The kernel and vendored
 components retain their respective licenses as recorded alongside the sources.
-See the component licenses and [modification notice](NOTICE.md).
+The initial identity transaction does not replace those license terms.
 
-## XkcnSU changes
+## Initial XKCNSU changes
 
-- The Manager displays XkcnSU. The package, certificate subject, build variables
-  and runtime paths use the dedicated XKCNSU identity.
+- Product, package, certificate subject, key aliases, paths, logging tags,
+  project symbols, build variables and resource names use XKCNSU / xkcnsu.
 - Existing KernelSU UAPI, JNI namespace and module ecosystem identifiers remain
   consistent with their consumers.
-- Automatic updates default to disabled until the project's release URL is configured.
+- Automatic updates default to disabled until XKCNSU's own release URL is configured.
 - Kernel and Manager builds verify the package and the actual keystore
   certificate against the shared public certificate metadata before building.
 - A new vector X mark replaces the upstream product artwork.
-
-See the [comparison with the upstream release](README.md#与上游-v023-的差异)
-for module installation, downloads, temporary Root and signing changes.

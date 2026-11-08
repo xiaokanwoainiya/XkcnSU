@@ -93,9 +93,10 @@ fn check(
     if service.is_some() {
         return Ok(service);
     }
-    request
-        .and_then(|request| request.run_script.as_deref())
-        .map_or_else(|| Ok(None), |script| check_run_script(&staged_dir, script))
+    match request.and_then(|request| request.run_script.as_deref()) {
+        Some(script) => check_run_script(&staged_dir, script),
+        None => Ok(None),
+    }
 }
 
 /// Move the live module dir out of the way. Running processes and existing mounts may still

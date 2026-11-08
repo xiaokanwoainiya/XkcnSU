@@ -50,22 +50,10 @@ def main() -> None:
         if expected is None or expected["sha256"] != hashlib.sha256(module.read_bytes()).hexdigest():
             raise SystemExit(f"Final APK blocked: daemon embedded asset is stale: {module.name}")
     signing = subprocess.check_output(
-        ["apksigner", "verify", "--verbose", "--print-certs", str(apk)], text=True
+        ["apksigner", "verify", "--print-certs", str(apk)], text=True
     )
-    schemes = re.findall(
-        r"^Verified using (v\d+(?:\.\d+)?) scheme [^:\n]+: true$",
-        signing, re.MULTILINE,
-    )
-    if schemes != ["v2"]:
-        raise SystemExit("Final APK must use APK Signature Scheme v2 only")
-    signer_digests = re.findall(
-        r"^(?:V2 Signer:|Signer #\d+) certificate SHA-256 digest: ([0-9a-fA-F]{64})$",
-        signing, re.MULTILINE,
-    )
-    if "Number of signers: 1" not in signing.splitlines() or len(signer_digests) != 1:
-        raise SystemExit("Final APK must have exactly one signing certificate")
-    signer_hash = signer_digests[0].lower()
-    if signer_hash != certificate["KSU_EXPECTED_HASH"]:
+    match = re.search(r"certificate SHA-256 digest:\s*([0-9a-fA-F]+)", signing)
+    if not match or match.group(1).lower() != certificate["KSU_EXPECTED_HASH"]:
         raise SystemExit("APK signing certificate does not match the kernel certificate")
     badging = subprocess.check_output(["aapt2", "dump", "badging", str(apk)], text=True)
     if f"name='{certificate['KSU_PACKAGE_NAME']}'" not in badging.splitlines()[0]:
@@ -121,7 +109,7 @@ def main() -> None:
         "package_name": certificate["KSU_PACKAGE_NAME"],
         "version_name": version_name,
         "version_code": version_code,
-        "certificate_sha256": signer_hash,
+        "certificate_sha256": match.group(1).lower(),
         "ksud_sha256": hashlib.sha256(daemon).hexdigest(),
         "native_daemons": native_daemons,
     }

@@ -16,22 +16,6 @@
 #[path = "../../../../../userspace/ksud/src/kpm.rs"]
 pub mod kpm;
 
-// The standalone backend tests use a boot-loaded provider.
-#[allow(clippy::missing_errors_doc)]
-pub mod ksucalls {
-    use anyhow::Result;
-
-    pub const JAILBREAK_INTEGRATION_REASON: &str = "SuSFS and KPM are disabled in jailbreak mode";
-
-    pub const fn is_late_load() -> bool {
-        false
-    }
-
-    pub const fn ensure_kernel_integrations_allowed() -> Result<()> {
-        Ok(())
-    }
-}
-
 #[allow(clippy::missing_errors_doc)]
 pub mod kpm_image {
     use anyhow::Result;

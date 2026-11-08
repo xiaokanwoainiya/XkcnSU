@@ -35,7 +35,7 @@ pub fn on_post_fs_data() -> Result<()> {
     let wait = ScriptWait::Until(Instant::now() + defs::BOOT_STAGE_TIMEOUT);
 
     assets::ensure_binaries(true).with_context(|| "Failed to extract bin assets")?;
-    if !safe_mode && !ksucalls::is_late_load() {
+    if !safe_mode {
         if let Err(error) = crate::susfsd::load_if_autoload_enabled() {
             warn!("SUSFS auto-load failed; root remains available: {error:#}");
         }

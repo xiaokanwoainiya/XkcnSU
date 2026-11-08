@@ -233,7 +233,7 @@ private fun TopBar(
     BlurredBar(backdrop) {
         TopAppBar(
             color = barColor,
-            title = stringResource(R.string.app_name),
+            title = "XKCNSU",
             actions = {
                 RebootListPopupMiuix()
             },

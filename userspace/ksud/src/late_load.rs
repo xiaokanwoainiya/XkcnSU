@@ -35,19 +35,8 @@ fn dump_process_info(label: &str) {
     );
 }
 
-fn reject_quarantined_provider() -> Result<()> {
-    let init_error = std::fs::read_to_string("/sys/module/kernelsu/parameters/init_error")
-        .ok()
-        .and_then(|value| value.trim().parse::<i32>().ok())
-        .unwrap_or_default();
-    anyhow::ensure!(
-        init_error == 0,
-        "XKCNSU LKM is quarantined (init_error={init_error}); reboot before retrying late-load"
-    );
-    Ok(())
-}
-
-fn prepare_root_provider(kmi: Option<String>, allow_shell: bool) -> Result<()> {
+pub fn run(package_name: &String, kmi: Option<String>, allow_shell: bool) -> Result<()> {
+    utils::daemonize(false)?;
     info!("late-load command triggered!");
     dump_process_info("late-load start");
 
@@ -55,7 +44,6 @@ fn prepare_root_provider(kmi: Option<String>, allow_shell: bool) -> Result<()> {
     if ksuinit::has_kernelsu() {
         info!("KernelSU already loaded, skip loading ko");
     } else {
-        reject_quarantined_provider()?;
         // 2. Detect current KMI version
         let kmi = kmi.map_or_else(
             || crate::boot_patch::get_current_kmi().context("Failed to detect current KMI version"),
@@ -76,22 +64,15 @@ fn prepare_root_provider(kmi: Option<String>, allow_shell: bool) -> Result<()> {
         } else {
             cstr!("")
         };
-        let loaded = ksuinit::load_module(&ko_data, params);
-        reject_quarantined_provider()?;
-        loaded.context("Failed to load kernelsu.ko")?;
+        ksuinit::load_module(&ko_data, params).context("Failed to load kernelsu.ko")?;
         ksuinit::ensure_root_provider_ready()?;
+        anyhow::ensure!(
+            ksuinit::has_kernelsu(),
+            "XKCNSU LKM was loaded but its root interface is not ready"
+        );
         info!("kernelsu.ko loaded successfully!");
         dump_process_info("after load_module");
     }
-    Ok(())
-}
-
-pub fn run(package_name: &String, kmi: Option<String>, allow_shell: bool) -> Result<()> {
-    // The caller receives success only after the daemon has a usable root provider.
-    utils::daemonize_with(false, || {
-        prepare_root_provider(kmi, allow_shell)
-            .inspect_err(|error| eprintln!("Temporary Root provider setup failed: {error:#}"))
-    })?;
 
     // We need to reset stdin/stdout/stderr; otherwise, sending file descriptors via cmd transactions
     // will be blocked by SELinux because its fsec->sid is still u:r:su:s0 instead of u:r:ksu:s0.

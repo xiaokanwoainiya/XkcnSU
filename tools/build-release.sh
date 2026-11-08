@@ -139,7 +139,7 @@ PY
             -Pkotlin.compiler.execution.strategy=in-process
             -Pandroid.injected.testOnly=false
             --init-script "$signing_init"
-            "-PKSU_PACKAGE_NAME=$XKCNSU_PACKAGE_NAME" -PKSU_NAME=XkcnSU
+            "-PKSU_PACKAGE_NAME=$XKCNSU_PACKAGE_NAME" -PKSU_NAME=XKCNSU
             "-PXKCNSU_ABIS=$abis"
         )
         case "$stage" in

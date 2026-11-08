@@ -184,7 +184,7 @@ private fun TopBar(
     scrollBehavior: TopAppBarScrollBehavior? = null
 ) {
     LargeFlexibleTopAppBar(
-        title = { Text(stringResource(R.string.app_name)) },
+        title = { Text("XKCNSU") },
         actions = { RebootListPopup() },
         colors = expressiveTopAppBarColors(),
         windowInsets = WindowInsets.safeDrawing.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal),

@@ -28,7 +28,7 @@ val bundledKernelVersionCode = rootProject.extra["bundledKernelVersionCode"] as 
 
 val isPrBuild = project.findProperty("IS_PR_BUILD")?.toString()?.toBoolean() ?: false
 val defaultManagerPackageName = if (isPrBuild) "io.xkcnsu.manager.pr" else "io.xkcnsu.manager"
-val defaultManagerName = if (isPrBuild) "XkcnSU PR" else "XkcnSU"
+val defaultManagerName = if (isPrBuild) "XKCNSU PR" else "XKCNSU"
 val managerPackageName = project.findProperty("KSU_PACKAGE_NAME")?.toString() ?: defaultManagerPackageName
 val managerName = project.findProperty("KSU_NAME")?.toString() ?: defaultManagerName
 val xkcnSuUpdateUrl = providers.gradleProperty("XKCNSU_UPDATE_URL")
@@ -151,7 +151,6 @@ android {
     externalNativeBuild {
         cmake {
             path = file("src/main/cpp/CMakeLists.txt")
-            version = "3.31.6"
         }
     }
 

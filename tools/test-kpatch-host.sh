@@ -192,8 +192,6 @@ with tempfile.NamedTemporaryFile("w", dir=destination.parent, prefix=".host-kpat
     json.dump(report, output, indent=2)
     output.write("\n")
     temporary = output.name
-# The public manifest is read by the artifact uploader after sudo host tests.
-os.chmod(temporary, 0o644)
 os.replace(temporary, destination)
 print(f"MANIFEST: {destination}")
 if not ok:

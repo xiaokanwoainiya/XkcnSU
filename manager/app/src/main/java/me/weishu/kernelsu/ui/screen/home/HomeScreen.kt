@@ -1,6 +1,5 @@
 package me.weishu.kernelsu.ui.screen.home
 
-import android.content.Intent
 import android.widget.Toast
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -20,14 +19,9 @@ import androidx.compose.ui.unit.Dp
 import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.TimeoutCancellationException
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import me.weishu.kernelsu.R
-import me.weishu.kernelsu.magica.MagicaService
+import me.weishu.kernelsu.magica.GhostlockRunner
 import me.weishu.kernelsu.ksuApp
 import me.weishu.kernelsu.ui.LocalUiMode
 import me.weishu.kernelsu.ui.UiMode
@@ -38,7 +32,6 @@ import me.weishu.kernelsu.ui.util.CoreManagerUpdater
 import me.weishu.kernelsu.ui.util.module.LatestVersionInfo
 import me.weishu.kernelsu.ui.viewmodel.HomeViewModel
 import me.weishu.kernelsu.ui.viewmodel.KpmViewModel
-import kotlin.time.Duration.Companion.milliseconds
 
 @Composable
 fun HomePager(
@@ -123,15 +116,10 @@ fun HomePager(
         onUpdateClick = installManagerUpdate,
         onJailbreakClick = {
             loadingDialog.showLoading()
-            context.startService(Intent(context, MagicaService::class.java))
-            // Manager will be force-stopped and restarted by late-load on success.
-            // If that doesn't happen within timeout, jailbreak likely failed.
-            scope.launch(Dispatchers.IO) {
-                delay(30_000.milliseconds)
-                withContext(Dispatchers.Main) {
-                    loadingDialog.hide()
-                    Toast.makeText(context, R.string.jailbreak_timeout, Toast.LENGTH_LONG).show()
-                }
+            scope.launch {
+                val result = GhostlockRunner.run(context)
+                loadingDialog.hide()
+                Toast.makeText(context, result.message, Toast.LENGTH_LONG).show()
             }
         },
     )

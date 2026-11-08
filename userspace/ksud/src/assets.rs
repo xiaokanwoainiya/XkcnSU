@@ -14,10 +14,8 @@ mod android {
 
     pub fn ensure_binaries(ignore_if_exist: bool) -> anyhow::Result<()> {
         for file in Asset::iter() {
-            if matches!(file.as_ref(), "ksuinit" | "waitsys" | "kpimg" | "kptools")
-                || file.ends_with(".ko")
-            {
-                // Kernel payloads and image patch tools have dedicated consumers.
+            if file == "ksuinit" || file == "waitsys" || file.ends_with(".ko") {
+                // don't extract internal executables and kernel modules
                 continue;
             }
             let asset =
