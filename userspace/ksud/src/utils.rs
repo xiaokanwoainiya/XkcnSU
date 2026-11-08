@@ -321,10 +321,6 @@ pub fn daemonize_with<F: FnOnce() -> Result<()>>(use_init_pgrp: bool, configure:
     Ok(())
 }
 
-pub fn daemonize(use_init_pgrp: bool) -> Result<()> {
-    daemonize_with(use_init_pgrp, || Ok(()))
-}
-
 pub fn create_daemon(use_init_pgrp: bool) -> Result<bool> {
     create_daemon_with(use_init_pgrp, || Ok(()))
 }
