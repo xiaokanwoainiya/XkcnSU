@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Prefetch the exact Gradle wrapper distribution without configuring Manager.
+# Prefetch the Gradle wrapper and, for Manager builds, the pinned Kotlin compiler.
 set -Eeuo pipefail
 # shellcheck source=build-common.sh
 source "$(dirname -- "${BASH_SOURCE[0]}")/build-common.sh"
@@ -76,4 +76,32 @@ if [[ ! -f "$destination/$filename.ok" ]]; then
 fi
 printf '%s\n' "$checksum" > "$XKCNSU_OUT/toolchain/$filename.sha256"
 printf 'Pinned Gradle wrapper cached: %s\n' "$destination"
+
+if [[ -n "${XKCNSU_KOTLIN_MAVEN:-}" ]]; then
+    (
+        coordinate="org/jetbrains/kotlin/kotlin-compiler-embeddable/2.4.20"
+        maven_dir="$XKCNSU_KOTLIN_MAVEN/$coordinate"
+        mkdir -p "$maven_dir"
+        # Keep the original POM so Gradle still resolves the same transitive dependencies.
+        for extension in pom jar; do
+            artifact="kotlin-compiler-embeddable-2.4.20.$extension"
+            case "$extension" in
+                pom) checksum=269d98cc4c68670c11e4aeb404e1c7c6f31b782321908d7268ba25cd236d59b2 ;;
+                jar) checksum=cf97161430683fb9af96dc6a7017ffae1fe8737b80d12eee11f2fe3e76f8ded8 ;;
+            esac
+            archive="$maven_dir/$artifact"
+            if ! archive_matches "$archive"; then
+                partial="$(mktemp "$archive.XXXXXX")"
+                trap 'rm -f -- "$partial"' EXIT
+                if ! download_checked "https://maven-central.storage-download.googleapis.com/maven2/$coordinate/$artifact" &&
+                    ! download_checked "https://repo1.maven.org/maven2/$coordinate/$artifact" &&
+                    ! download_checked "https://repo.maven.apache.org/maven2/$coordinate/$artifact"; then
+                    xkcnsu_die "Could not download $artifact with the pinned checksum."
+                fi
+                mv -- "$partial" "$archive"
+            fi
+            printf '%s  %s\n' "$checksum" "$archive" | sha256sum --check
+        done
+    )
+fi
 xkcnsu_space

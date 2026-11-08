@@ -117,6 +117,7 @@ PY
         ;;
     manager|manager-tests|manager-lint|manager-assemble)
         export GRADLE_USER_HOME="${XKCNSU_MANAGER_GRADLE_HOME:-$XKCNSU_CACHE/gradle-build}"
+        export XKCNSU_KOTLIN_MAVEN="$XKCNSU_CACHE/kotlin-maven"
         [[ -d "$work/.git" ]] || xkcnsu_die "Release snapshot is missing."
         for abi in $abis; do
             [[ -s "$work/manager/app/src/main/jniLibs/$abi/libksud.so" ]] ||
